@@ -31,8 +31,6 @@ qt install skill
 
 For repository-specific behavior, create an `AGENTS.md` file in the target project, or append the Quantiles instructions to the existing [`AGENTS.md`](./AGENTS.md).
 
-## Agent usage
-
 ### Verify the install
 
 The easiest way to validate the setup is to run a test evaluation that does not use your own model or API keys. The demo sampler handles the run locally, so no inference costs are incurred.
@@ -59,7 +57,7 @@ Quantiles stores run history and sample-level results locally in the repository 
 ## Related files
 
 - [`SKILL.md`](./SKILL.md) defines reusable Quantiles behavior for coding agents.
-- `[`AGENTS.md`](./AGENTS.md) defines repository-specific rules in projects that use Quantiles.
+- [`AGENTS.md`](./AGENTS.md) defines repository-specific rules in projects that use Quantiles.
 - `llms.txt` helps agents discover documentation and high-signal references.
 - The main Quantiles documentation explains the CLI, SDKs, benchmarks, and run comparison workflow.
 
