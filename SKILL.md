@@ -1,3 +1,8 @@
+---
+name: quantiles
+description: Use this skill when writing, running, or analyzing evals and evals using the Quantiles Python SDK, TypeScript SDK, or qt CLI.
+---
+
 # Quantiles eval workflows
 
 Use this skill for Quantiles AI evaluation work. The `qt` CLI is the canonical entrypoint for running benchmarks and evaluations, inspecting run results, comparing runs, resuming interrupted workflows, and executing custom Python or TypeScript eval workflows.
