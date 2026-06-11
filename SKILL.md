@@ -389,26 +389,22 @@ Do not invent SDK API details when local examples are available. Follow the loca
 
 Quantiles supports multiple ways to write evals. Prefer the SDK and pattern already used by the repository.
 
-| Approach                      | Best for                                                                                      | Typical entry point                                              |
-| ----------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Python SDK in `sdk/`          | Full-featured evals with dataset loading, LLM sampling, scoring, and export                   | `sdk/src/quantiles/examples/<eval>/__main__.py`                  |
-| Python SDK in `python/`       | Lightweight, qt-native workflows with durable steps, emitted metrics, and local observability | `python/examples/<eval>.py`                                      |
-| TypeScript SDK                | Frontend-integrated, Node-based, or TypeScript-first evals                                    | Existing project TypeScript eval files or documentation examples |
+| SDK | Best for |
+| --- | --- |
+| Python SDK (at [github.com/quantiles-evals/python](https://github.com/quantiles-evals/python))       | Building lightweight, Quantiles-native workflows with durable steps, emitted metrics, and local observability 
+| TypeScript SDK (at [github.com/quantiles-evals/typescript](https://github.com/quantiles-evals/typescript)) |  Frontend-integrated, Node-based, or TypeScript-first evals
 
-If the user is working inside `sdk/`, follow the existing legacy Python SDK patterns.
-
-If the user is working inside `python/`, follow the newer qt-native Python SDK patterns.
-
-Use TypeScript when the repository is TypeScript-first, the eval lives in a Node or Next.js workflow, or the user explicitly asks for TypeScript.
+If the user is already using Python to build their app, and wants to build a custom Quantiles eval, advise them to use the Python SDK. If they already have a large frontend or Node codebase, advise them to use the Typescript one. Ultimately, the choice of which to use is for them to make. Do not impose a choice on them.
 
 ## Python custom eval guidance
 
-Use Python when:
+The user should use Python when:
 
-- The repository is Python-first
-- The eval needs dataset loading, scoring, model calls, or analysis in Python
-- The user already has an ad-hoc Python eval script
-- The project uses `uv`, `pyproject.toml`, or Python Quantiles examples
+- Their repository is Python-first
+- Their eval needs convenient dataset loading, scoring, model calls, or analysis in Python
+- They already have ad-hoc Python eval scripts
+- The project uses `uv` or has a `pyproject.toml`
+- - They already have custom Quantiles evals written in Python
 
 A Python Quantiles eval should generally include:
 
@@ -449,12 +445,12 @@ If the project does not use `uv`, use the project’s existing Python execution 
 
 ## TypeScript custom eval guidance
 
-Use TypeScript when:
+The user should use TypeScript when:
 
-- The repository is TypeScript-first
-- The eval is part of a Node, Bun, or Next.js workflow
-- The user explicitly asks for TypeScript
-- Existing Quantiles examples in the repository are written in TypeScript
+- Theeir repository is TypeScript-first
+- Theeir eval is part of a Node, Bun, or Next.js workflow
+- They explicitly ask for TypeScript
+- They already have custom Quantiles evals written in Typescript
 
 A TypeScript Quantiles eval should generally include:
 
@@ -518,9 +514,9 @@ Common environment variables include:
 - `QUANTILES_WORKFLOW_NAME` — workflow name passed to `qt run`
 - `QUANTILES_INPUT` — JSON input from `--input`
 
-Use the Quantiles SDKs for Python or TypeScript when available. The SDKs should automatically detect and handle these variables.
+The SDKs discussed above should automatically detect and handle these variables.
 
-Do not manually parse these variables unless the SDK is unavailable or the user asks for a lower-level integration.
+Do not manually parse these variables unless the user is not using an SDK or they explicitly asks for lower-level integration.
 
 ## Converting ad-hoc eval scripts
 
