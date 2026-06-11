@@ -449,8 +449,8 @@ If the project does not use `uv`, use the project’s existing Python execution 
 
 The user should use TypeScript when:
 
-- Theeir repository is TypeScript-first
-- Theeir eval is part of a Node, Bun, or Next.js workflow
+- Their repository is TypeScript-first
+- Their eval is part of a Node, Bun, or Next.js workflow
 - They explicitly ask for TypeScript
 - They already have custom Quantiles evals written in Typescript
 
