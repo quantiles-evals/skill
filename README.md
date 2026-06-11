@@ -14,9 +14,9 @@ It is designed for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, OpenC
 
 - Runs evaluations through `qt`.
 - Preserves run IDs, commands, inputs, metrics, stdout, stderr, and failure context.
-- Uses `qt run <benchmark>` to run built-in benchmarks and custom eval workflows.
-- Uses `qt show <run_id>` to inspect run results.
-- Uses `qt compare <run_id_a> <run_id_b>` to analyze changes between runs.
+- Uses `qt run $BENCHMARK` to run built-in benchmarks and custom eval workflows.
+- Uses `qt show $RUN_ID` to inspect run results.
+- Uses `qt compare $RUN_ID_A $RUN_ID_B` to analyze changes between runs.
 - Uses `--json` to inspect structured result outputs.
 - Uses `--resume` when a run is interrupted or partially completed.
 - Reports aggregate metrics, sample-level results, failed samples, regressions, and next steps.
