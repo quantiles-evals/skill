@@ -260,20 +260,17 @@ For small sample counts, call the analysis preliminary.
 If the user does not provide a run ID, list recent runs:
 
 ```bash
-qt list
+qt list --json
 ```
 
-Use `qt list` to find:
+Use this command to find:
 
 - the most recent run
 - two runs to compare
 - failed or interrupted runs
 - runs for a specific benchmark or workflow
 
-If there are many runs, narrow by benchmark name, workflow name, timestamp, status, or model when available.
-
-ASK AARON SHOULD LIST HAVE JSON??
-`qt list` currently returns human-readable output and does not support `--json`. Use it only to identify candidate run IDs, then use `qt show <run_id> --json` for structured inspection.
+If there are many runs, narrow by benchmark name, workflow name, timestamp, status, or model when available. Use `qt list` to identify candidate run IDs, then use `qt show <run_id> --json` for structured inspection.
 
 ## Comparing evals
 
@@ -282,7 +279,7 @@ The `qt` CLI can compare two eval runs. To compare runs, first identify the two 
 If the user does not provide run IDs, find recent runs:
 
 ```bash
-qt list
+qt list --json
 ```
 
 Then compare the two runs:
