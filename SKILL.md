@@ -1,6 +1,6 @@
----
 name: quantiles
-description: Use this skill when writing, running, or analyzing evals and evals using the Quantiles Python SDK, TypeScript SDK, or qt CLI.
+description: Use when writing, running, inspecting, comparing, resuming, or analyzing Quantiles evaluation workflows with the qt CLI, Quantiles Python SDK, or Quantiles TypeScript SDK. Do not use for general statistics questions about quantiles or percentiles.
+
 ---
 
 # Quantiles eval workflows
@@ -9,7 +9,19 @@ Use this skill for Quantiles AI evaluation work. The `qt` CLI is the canonical e
 
 Prefer `qt` CLI commands over manually reading local Quantiles storage files unless the CLI output is insufficient.
 
-Always pass `--json` when using `qt run`, `qt show`, or `qt compare` so results can be parsed reliably.
+Always pass `--json` when using `qt run`, `qt list`, `qt show`, or `qt compare` so results can be parsed reliably.
+
+## Relationship to AGENTS.md
+
+This skill is a reusable Quantiles workflow, not a substitute for repository instructions.
+
+When working inside a repository, also follow the active `AGENTS.md` instruction chain for repository layout, package managers, coding style, tests, safety rules, and handoff requirements. If this skill gives a generic Quantiles command but the local `AGENTS.md`, README, or package configuration gives a more specific command, use the local command and report the choice.
+
+Precedence:
+
+1. Explicit user instructions.
+2. The nearest applicable `AGENTS.md` for repository-specific implementation and validation.
+3. This skill for Quantiles eval execution, inspection, comparison, resume, and reporting workflow.
 
 ## When to use this skill
 
@@ -38,7 +50,7 @@ Do not use this skill for:
 Follow these rules for all Quantiles work:
 
 1. Use the `qt` CLI as the source of truth.
-2. Use `--json` for `qt run`, `qt show`, and `qt compare`.
+2. Use `--json` for `qt run`, `qt list`, `qt show`, and `qt compare`.
 3. Report the exact command used.
 4. Report the `run_id` after every successful run.
 5. Do not claim a demo sampler run measures real model quality.
@@ -58,7 +70,7 @@ command -v qt && qt --version
 
 If `qt` is missing, do not install it unless the user asked for setup or the task cannot proceed without installation.
 
-If installation is needed, use the project’s documented install command when available. Otherwise, the standard Quantiles CLI install command is:
+If installation is needed, use the project’s documented install command. Do not run network installers without user approval. Otherwise, the standard Quantiles CLI install command is:
 
 ```bash
 curl -fsSL https://cli.quantiles.io/install.sh | bash
@@ -108,7 +120,6 @@ The `qt` CLI includes built-in evals such as:
 | ------------------- | --------------------------------------------------------------------------- |
 | `pubmedqa`          | Evaluates model performance on standard healthcare knowledge questions      |
 | `simpleqa-verified` | Evaluates general factual knowledge using an updated SimpleQA-style dataset |
-| `financebench`      | Evaluates open-book financial question answering over public-company filings |
 
 Run a built-in eval with:
 
@@ -150,6 +161,7 @@ Always pass `--json` to:
 
 ```bash
 qt run <eval-name> --json
+qt list --json
 qt show <run_id> --json
 qt compare <run_id_1> <run_id_2> --json
 ```
@@ -188,7 +200,7 @@ For provider-backed runs, pass a provider-prefixed `model` value:
 A typical provider-backed run looks like this:
 
 ```bash
-qt run simpleqa-verified --input '{"limit":100,"model":"openai:gpt-4o-mini"}' --json
+qt run simpleqa-verified --input '{"limit":100,"model":"openai:<model>"}' --json
 ```
 
 Before running a provider-backed eval, follow the credential checks in Secrets and cost safety. For shell command examples, use the project’s documented default model when available; otherwise, use a concrete provider-prefixed model string.
@@ -391,10 +403,10 @@ Do not invent SDK API details when local examples are available. Follow the loca
 
 Quantiles supports multiple ways to write evals. Prefer the SDK and pattern already used by the repository.
 
-| SDK | Best for |
-| --- | --- |
-| Python SDK (at [github.com/quantiles-evals/python](https://github.com/quantiles-evals/python))       | Building lightweight, Quantiles-native workflows with durable steps, emitted metrics, and local observability 
-| TypeScript SDK (at [github.com/quantiles-evals/typescript](https://github.com/quantiles-evals/typescript)) |  Frontend-integrated, Node-based, or TypeScript-first evals
+| SDK                                                                                                        | Best for                                                                                                      |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Python SDK (at [github.com/quantiles-evals/python](https://github.com/quantiles-evals/python))             | Building lightweight, Quantiles-native workflows with durable steps, emitted metrics, and local observability |
+| TypeScript SDK (at [github.com/quantiles-evals/typescript](https://github.com/quantiles-evals/typescript)) | Frontend-integrated, Node-based, or TypeScript-first evals                                                    |
 
 If the user is already using Python to build their app, and wants to build a custom Quantiles eval, advise them to use the Python SDK. If they already have a large frontend or Node codebase, advise them to use the Typescript one. Ultimately, the choice of which to use is for them to make. Do not impose a choice on them.
 
@@ -406,7 +418,7 @@ The user should use Python when:
 - Their eval needs convenient dataset loading, scoring, model calls, or analysis in Python
 - They already have ad-hoc Python eval scripts
 - The project uses `uv` or has a `pyproject.toml`
-- - They already have custom Quantiles evals written in Python
+- They already have custom Quantiles evals written in Python
 
 A Python Quantiles eval should generally include:
 

@@ -1,4 +1,4 @@
-# Quantiles Agent Skill
+# Quantiles Coding Agent Skill
 
 Reusable coding-agent instructions for running Quantiles evaluations from a repository.
 
@@ -23,13 +23,11 @@ It is designed for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, OpenC
 
 ## Install
 
-Install the Quantiles CLI and skill in the target repository and initialize local eval state:
+Install the Quantiles CLI and make this skill available to your coding agent.
 
-```bash
-qt install skill
-```
+For Codex-compatible skill discovery, copy or install this directory as `.agents/skills/quantiles/` in the target repository, so the skill file is available at `.agents/skills/quantiles/SKILL.md`. Other coding agents may use different skill locations or import flows.
 
-For repository-specific behavior, create an `AGENTS.md` file in the target project, or append the Quantiles instructions to the existing [`AGENTS.md`](./AGENTS.md).
+For repository-specific behavior, create an `AGENTS.md` file in the target project, or add Quantiles guidance to the existing repository-level `AGENTS.md`. In this repository, the root agent guide is [`../AGENTS.md`](../AGENTS.md).
 
 ### Verify the install
 
@@ -57,7 +55,7 @@ Quantiles stores run history and sample-level results locally in the repository 
 ## Related files
 
 - [`SKILL.md`](./SKILL.md) defines reusable Quantiles behavior for coding agents.
-- [`AGENTS.md`](./AGENTS.md) defines repository-specific rules in projects that use Quantiles.
+- [`../AGENTS.md`](../AGENTS.md) defines repository-specific rules for this repository.
 - `llms.txt` helps agents discover documentation and high-signal references.
 - The main Quantiles documentation explains the CLI, SDKs, benchmarks, and run comparison workflow.
 
