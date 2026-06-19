@@ -50,6 +50,7 @@ Do not use this skill for:
 Follow these rules for all Quantiles work:
 
 1. Use the `qt` CLI as the source of truth.
+2. Prefer CLI output over manually reading `.quantiles/` files. Never manually edit or delete `.quantiles/` files unless explicitly asked.
 2. Use `--json` for `qt run`, `qt list`, `qt show`, and `qt compare`.
 3. Report the exact command used.
 4. Report the `run_id` after every successful run.
