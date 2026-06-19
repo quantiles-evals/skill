@@ -343,9 +343,7 @@ Inspect it:
 qt show <run_id> --json
 ```
 
-If the installed CLI supports resume, resume the run instead of starting from scratch.
-
-Common resume pattern:
+Wherever necessary, resume the run instead of restarting the workflow from the beginning. Do so with the below command:
 
 ```bash
 qt run <workflow-name> --resume <run_id> --json
