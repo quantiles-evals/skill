@@ -331,31 +331,17 @@ When comparing, report:
 
 ## Resuming interrupted runs
 
-If a run failed or was interrupted, find the run:
+If an eval failed or was interrupted, resume it instead of restarting the run from the beginning. Do so with the below command:
 
 ```bash
-qt list
+qt resume <run_id> --json
 ```
 
-Inspect it:
+If you need to find the run ID, use `qt list --json` to see all the runs, and use `qt show <run_id> --json` to get details on a run's status.
 
-```bash
-qt show <run_id> --json
-```
+Resuming is often useful in cases where an LLM provider is throttling. If a run fails due to such a rate-limit error, wait at least 1 second and then execute `qt resume <run_id> --json`. Do not perform more than 3 resume attempts for the same run. If the run continues to fail due to rate limits after those 3 attempts, notify the user that the provider’s rate limits are being exceeded and further retries may not succeed without reducing concurrency or increasing provider limits.
 
-Wherever necessary, resume the run instead of restarting the eval from the beginning. Do so with the below command:
-
-```bash
-qt run <eval-name> --resume <run_id> --json
-```
-
-For custom evals, preserve the eval name, input JSON, and command unless the user explicitly wants a new run:
-
-```bash
-qt run <eval-name> --resume <run_id> --input '<same-input-json>' --json -- <command>
-```
-
-When resuming, report:
+After resuming, report:
 
 - Original run ID
 - Resume command
