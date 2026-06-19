@@ -5,7 +5,7 @@ description: Use when writing, running, inspecting, comparing, resuming, or anal
 
 # Quantiles eval workflows
 
-Use this skill for Quantiles AI evaluation work. The `qt` CLI is the canonical entrypoint for running benchmarks and evaluations, inspecting run results, comparing runs, resuming interrupted workflows, and executing custom Python or TypeScript eval workflows.
+Use this skill for Quantiles AI evaluation work. The `qt` CLI is the canonical entrypoint for running benchmarks and evaluations, inspecting run results, comparing runs, resuming interrupted evals, and executing custom Python or TypeScript eval workflows.
 
 Prefer `qt` CLI commands over manually reading local Quantiles storage files unless the CLI output is insufficient.
 
@@ -31,17 +31,17 @@ Use this skill when the user asks to:
 - Run a built-in Quantiles benchmark
 - Inspect or analyze one or more Quantiles eval runs
 - Compare two Quantiles eval runs
-- Resume a failed or interrupted Quantiles workflow
+- Resume a failed or interrupted Quantiles eval
 - Debug failed samples, metrics, scorers, or run outputs
 - Write a new custom eval using the Quantiles Python SDK or TypeScript SDK
-- Convert an ad-hoc Python or TypeScript eval script into a durable Quantiles workflow
+- Convert an ad-hoc Python or TypeScript eval script into a durable Quantiles eval
 
 ## Do not use this skill for
 
 Do not use this skill for:
 
 - General statistics questions about quantiles, percentiles, medians, or distributions
-- Non-Quantiles eval frameworks unless the user asks to convert them into Quantiles workflows
+- Non-Quantiles eval frameworks unless the user asks to convert them into Quantiles evals
 - Reporting demo sampler runs as valid model-quality benchmark results
 - Manually editing Quantiles run storage unless the user explicitly asks and the CLI cannot do the task
 
@@ -133,7 +133,7 @@ Example:
 qt run pubmedqa --json
 ```
 
-For initial workflow validation, prefer a small local smoke test:
+For initial eval validation, prefer a small local smoke test:
 
 ```bash
 qt run simpleqa-verified --input '{"limit":10}' --json
@@ -169,7 +169,7 @@ qt compare <run_id_1> <run_id_2> --json
 `qt run` returns structured data that usually includes:
 
 - `run_id`
-- workflow or benchmark name
+- eval name
 - input JSON
 - command used
 - status
@@ -224,7 +224,7 @@ qt show <run_id> --json
 `qt show` returns structured information about the run. Use it to summarize:
 
 - Run ID
-- Workflow or benchmark name
+- eval name
 - Input JSON
 - Model or sampler
 - Status
@@ -280,9 +280,9 @@ Use this command to find:
 - the most recent run
 - two runs to compare
 - failed or interrupted runs
-- runs for a specific benchmark or workflow
+- runs for a specific eval
 
-If there are many runs, narrow by benchmark name, workflow name, timestamp, status, or model when available. Use `qt list` to identify candidate run IDs, then use `qt show <run_id> --json` for structured inspection.
+If there are many runs, narrow by benchmark name, eval name, timestamp, status, or model when available. Use `qt list` to identify candidate run IDs, then use `qt show <run_id> --json` for structured inspection.
 
 ## Comparing evals
 
@@ -304,7 +304,7 @@ Before saying one run is better, check whether the comparison is apples-to-apple
 
 Check:
 
-- Same benchmark or workflow
+- Same eval
 - Same dataset or dataset version
 - Same sample count
 - Same split or sample selection, if available
@@ -343,16 +343,16 @@ Inspect it:
 qt show <run_id> --json
 ```
 
-Wherever necessary, resume the run instead of restarting the workflow from the beginning. Do so with the below command:
+Wherever necessary, resume the run instead of restarting the eval from the beginning. Do so with the below command:
 
 ```bash
-qt run <workflow-name> --resume <run_id> --json
+qt run <eval-name> --resume <run_id> --json
 ```
 
-For custom evals, preserve the workflow name, input JSON, and command unless the user explicitly wants a new run:
+For custom evals, preserve the eval name, input JSON, and command unless the user explicitly wants a new run:
 
 ```bash
-qt run <workflow-name> --resume <run_id> --input '<same-input-json>' --json -- <command>
+qt run <eval-name> --resume <run_id> --input '<same-input-json>' --json -- <command>
 ```
 
 If the installed CLI uses a different resume syntax, check:
@@ -403,7 +403,7 @@ Quantiles supports multiple ways to write evals. Prefer the SDK and pattern alre
 
 | SDK                                                                                                        | Best for                                                                                                      |
 | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Python SDK (at [github.com/quantiles-evals/python](https://github.com/quantiles-evals/python))             | Building lightweight, Quantiles-native workflows with durable steps, emitted metrics, and local observability |
+| Python SDK (at [github.com/quantiles-evals/python](https://github.com/quantiles-evals/python))             | Building lightweight, Quantiles-native evals with durable steps, emitted metrics, and local observability |
 | TypeScript SDK (at [github.com/quantiles-evals/typescript](https://github.com/quantiles-evals/typescript)) | Frontend-integrated, Node-based, or TypeScript-first evals                                                    |
 
 If the user is already using Python to build their app, and wants to build a custom Quantiles eval, advise them to use the Python SDK. If they already have a large frontend or Node codebase, advise them to use the Typescript one. Ultimately, the choice of which to use is for them to make. Do not impose a choice on them.
@@ -431,7 +431,7 @@ A Python Quantiles eval should generally include:
 
 Important rules:
 
-- Workflow names must be stable and unique within the file.
+- eval names must be stable and unique within the file.
 - `entrypoint()` uses `QUANTILES_WORKFLOW_NAME` from the CLI.
 - `step()` caches by `step_key`.
 - Use deterministic step keys, usually based on sample IDs.
@@ -444,7 +444,7 @@ Important rules:
 Run a Python custom eval with:
 
 ```bash
-qt run <workflow-name> --input '{"key":"value"}' --json -- uv run python <eval-file>.py
+qt run <eval-name> --input '{"key":"value"}' --json -- uv run python <eval-file>.py
 ```
 
 Example:
@@ -466,7 +466,7 @@ The user should use TypeScript when:
 
 A TypeScript Quantiles eval should generally include:
 
-- A workflow name
+- An eval name
 - Input JSON parsing
 - Durable per-sample `step()` calls
 - `emit()` calls for metrics
@@ -476,7 +476,7 @@ A TypeScript Quantiles eval should generally include:
 Run a TypeScript custom eval with:
 
 ```bash
-qt run <workflow-name> --input '{"key":"value"}' --json -- bun run <eval-file>.ts
+qt run <eval-name> --input '{"key":"value"}' --json -- bun run <eval-file>.ts
 ```
 
 Example:
@@ -492,13 +492,13 @@ If the project uses `npm`, `pnpm`, `yarn`, or `tsx` instead of Bun, use the proj
 Run Python custom evals with:
 
 ```bash
-qt run my-workflow --input '{"key":"value"}' --json -- uv run python my_eval.py
+qt run my-eval --input '{"key":"value"}' --json -- uv run python my_eval.py
 ```
 
 Run TypeScript custom evals with:
 
 ```bash
-qt run my-workflow --input '{"key":"value"}' --json -- bun run my_eval.ts
+qt run my-eval --input '{"key":"value"}' --json -- bun run my_eval.ts
 ```
 
 Place `--json` before the custom command separator `--`.
@@ -523,7 +523,7 @@ Common environment variables include:
 
 - `QUANTILES_BASE_URL` — local server URL, often `http://127.0.0.1:8765`
 - `QUANTILES_RUN_ID` — existing run ID, if resuming
-- `QUANTILES_WORKFLOW_NAME` — workflow name passed to `qt run`
+- `QUANTILES_WORKFLOW_NAME` — eval name passed to `qt run`
 - `QUANTILES_INPUT` — JSON input from `--input`
 
 The SDKs discussed above should automatically detect and handle these variables.
@@ -532,7 +532,7 @@ Do not manually parse these variables unless the user is not using an SDK or the
 
 ## Converting ad-hoc eval scripts
 
-When converting an ad-hoc eval script into a Quantiles workflow:
+When converting an ad-hoc eval script into a Quantiles eval:
 
 1. Preserve the existing dataset loading logic.
 2. Preserve the existing model, prompt, scorer, and metric behavior unless the user asks for changes.
@@ -558,8 +558,8 @@ Command used:
 Run ID:
 <run_id>
 
-Workflow or benchmark:
-<workflow_or_benchmark_name>
+Eval:
+<eval_name>
 
 Model or sampler:
 <model_or_sampler>
@@ -622,7 +622,7 @@ Then rerun the eval.
 
 ### Built-in eval ran but results look random
 
-Check whether the run used the demo sampler. Demo sampler output is expected to be random or fake and should only be used for workflow validation.
+Check whether the run used the demo sampler. Demo sampler output is expected to be random or fake and should only be used for overall validation and smoke testing.
 
 ### Provider-backed eval fails immediately
 
@@ -651,7 +651,7 @@ Check that it is run through `qt run` and that the SDK can see the Quantiles env
 Run a minimal custom eval smoke test:
 
 ```bash
-qt run <workflow-name> --input '{"limit":1}' --json -- <project-command>
+qt run <eval-name> --input '{"limit":1}' --json -- <project-command>
 ```
 
 ### Resume does not work
