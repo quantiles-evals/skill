@@ -355,14 +355,6 @@ For custom evals, preserve the eval name, input JSON, and command unless the use
 qt run <eval-name> --resume <run_id> --input '<same-input-json>' --json -- <command>
 ```
 
-If the installed CLI uses a different resume syntax, check:
-
-```bash
-qt run --help
-```
-
-Then follow the installed CLI’s resume instructions.
-
 When resuming, report:
 
 - Original run ID
