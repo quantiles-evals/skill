@@ -362,7 +362,7 @@ If the user does not provide a run ID, list recent runs:
 qt list --json
 ```
 
-Use this command to find:
+Below are some examples of things you can find in the output of this command:
 
 - the most recent run
 - two runs to compare
@@ -373,23 +373,13 @@ If there are many runs, narrow by benchmark name, eval name, timestamp, status, 
 
 ## Comparing evals
 
-The `qt` CLI can compare two eval runs. To compare runs, first identify the two `run_id` values.
-
-If the user does not provide run IDs, find recent runs:
-
-```bash
-qt list --json
-```
-
-Then compare the two runs:
+The `qt` CLI can compare two eval runs. To compare runs, first identify the two `run_id` values, then run the following:
 
 ```bash
 qt compare <run_id_1> <run_id_2> --json
 ```
 
-Before saying one run is better, check whether the comparison is apples-to-apples.
-
-Check:
+Before doing any comparative analyses, check whether the comparison is apples-to-apples by checking the following:
 
 - Same eval
 - Same dataset or dataset version
@@ -403,9 +393,7 @@ Check:
 
 If benchmark names differ, tell the user that the comparison may not be apples-to-apples because the runs may measure different model functionality and behaviors.
 
-If sample counts are small, say the comparison is directional and should be confirmed with a larger run.
-
-When comparing, report:
+When comparing, report the following information, if available, along with any other analyses that would help the user interpret the results:
 
 - Run IDs
 - What changed between the runs
@@ -418,13 +406,11 @@ When comparing, report:
 
 ## Resuming interrupted runs
 
-If an eval failed or was interrupted, resume it instead of restarting the run from the beginning. Do so with the below command:
+If an eval failed or was interrupted for any reason, resume it from where it left off instead of restarting the run from the beginning. Do so with the below command:
 
 ```bash
 qt resume <run_id> --json
 ```
-
-If you need to find the run ID, use `qt list --json` to see all the runs, and use `qt show <run_id> --json` to get details on a run's status.
 
 Resuming is often useful in cases where an LLM provider is throttling. If a run fails due to such a rate-limit error, wait at least 1 second and then execute `qt resume <run_id> --json`. Do not perform more than 3 resume attempts for the same run. If the run continues to fail due to rate limits after those 3 attempts, notify the user that the provider’s rate limits are being exceeded and further retries may not succeed without reducing concurrency or increasing provider limits.
 
@@ -437,17 +423,9 @@ After resuming, report:
 - Final status
 - Any remaining errors
 
-## Deleting evals
+## Suggested reporting template
 
-It is not currently possible to delete Quantiles eval runs through the CLI.
-
-If the user asks to delete or remove eval runs, explain that deletion is not available. Offer to hide, filter, or exclude that group from displayed results instead, such as hiding failed runs or filtering the run list by status.
-
-Do not manually delete or modify Quantiles local storage files unless the user explicitly asks and understands that this may corrupt run history.
-
-## Reporting template
-
-After running, inspecting, comparing, or resuming Quantiles evals, report results using this structure:
+Below is an example template that could be used for reporting results after running, inspecting, comparing, or resuming Quantiles evals. If the user requests a different format, adhere to their request and do not use this format.
 
 ```text
 Command used:
@@ -459,8 +437,8 @@ Run ID:
 Eval:
 <eval_name>
 
-Model or sampler:
-<model_or_sampler>
+Model:
+<model>
 
 Input:
 <input_json>
@@ -508,48 +486,40 @@ Then verify:
 command -v qt && qt --version
 ```
 
-### Repository is not initialized
-
-Run:
-
-```bash
-qt init
-```
-
-Then rerun the eval.
-
 ### Built-in eval ran but results look random
 
-Check whether the run used the demo sampler. Demo sampler output is expected to be random or fake and should only be used for overall validation and smoke testing.
+Check whether the run used the demo model. Demo model output is expected to be random or fake and should only be used for overall validation and smoke testing.
 
-### Provider-backed eval fails immediately
+### Provider-backed model fails immediately
 
-Check the relevant provider environment variable from Secrets and cost safety, and verify that `model` uses the correct provider prefix.
+Check the relevant provider environment variable from the "Secrets and cost safety" section, then verify that the `model` input key uses the correct provider prefix.
+
+Model configuration can be found in the `quantiles.toml`/`.quantiles.toml` config file. Read [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for more details.
 
 ### JSON parsing fails
 
-Confirm `--json` was passed before the custom command separator `--`.
+Confirm `--json` was passed to the command:
 
 Correct:
 
 ```bash
-qt run my-eval --input '{"limit":10}' --json -- uv run python my_eval.py
+qt run my-eval --json
 ```
 
 Incorrect:
 
 ```bash
-qt run my-eval --input '{"limit":10}' -- uv run python my_eval.py --json
+qt run my-eval
 ```
 
-### Custom eval does not connect to Quantiles
+### Custom eval does not connect to Quantiles local RPC server
 
 Check that it is run through `qt run` and that the SDK can see the Quantiles environment variables.
 
 Run a minimal custom eval smoke test:
 
 ```bash
-qt run <eval-name> --input '{"limit":1}' --json -- <project-command>
+qt run <eval-name> --json
 ```
 
 ### Resume does not work
