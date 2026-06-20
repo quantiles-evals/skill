@@ -136,7 +136,7 @@ If the test succeeds, and the user approves running the full dataset, remove the
 qt run simpleqa-verified --json
 ```
 
-The above examples use a demo model, which, as described above, just generates random text. If the user requests to use a hosted LLM provider, configure that in the `quantiles.toml` config file. See [`github.com/quantiles-evals/quantiles/blob/main/CONFIG.md`](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details.
+The above examples use a demo model, which, as described above, just generates random text. See the "Customizing the model" section below for details on using hosted LLM providers instead.
 
 ### Limiting sample count
 
@@ -151,6 +151,14 @@ qt run simpleqa-verified --input '{"samples":100}' --json
 Use small limits for smoke tests and larger limits only when the user wants a more complete benchmark run.
 
 For provider-backed model runs, use a small limit first unless the user explicitly requests a larger run.
+
+### Customizing the model
+
+If the user requests to use a hosted LLM provider, configure it in the `quantiles.toml` config file. See [`github.com/quantiles-evals/quantiles/blob/main/CONFIG.md`](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details.
+
+Before running a provider-backed eval, follow the credential checks in the "Secrets and cost safety" section. For shell command examples, use the project’s documented default model when available; otherwise, use a concrete provider-prefixed model string.
+
+After running, report whether the run used the demo model or a real provider-backed model.
 
 ## JSON output
 
@@ -188,32 +196,6 @@ qt resume <run_id> --json
 ```
 
 Do not paste large raw JSON into the response. Summarize the important fields.
-
-## Customizing the model
-
-By default, the CLI uses the demo model. If the user wants to use this model, do not pass it in a `model` parameter.
-
-For provider-backed runs, pass a provider-prefixed `model` value:
-
-- `"model":"openai:<model>"`
-- `"model":"anthropic:<model>"`
-- `"model":"gemini:<model>"`
-
-A typical provider-backed run looks like this:
-
-```bash
-qt run simpleqa-verified --input '{"limit":100,"model":"openai:<model>"}' --json
-```
-
-Before running a provider-backed eval, follow the credential checks in Secrets and cost safety. For shell command examples, use the project’s documented default model when available; otherwise, use a concrete provider-prefixed model string.
-
-If the correct input key is unclear, inspect the CLI help or local documentation before running the command:
-
-```bash
-qt run --help
-```
-
-After running, report whether the run used the demo sampler or a real provider-backed model.
 
 ## Inspecting and analyzing evals
 
