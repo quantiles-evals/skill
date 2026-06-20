@@ -1,64 +1,36 @@
 # Quantiles Coding Agent Skill
 
-Reusable coding-agent instructions for running Quantiles evaluations from a repository.
+This repository contains reusable coding-agent instructions for running Quantiles evaluations from a repository. It is designed for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, OpenCode, and other coding agents that support reusable skills or instruction files.
 
-This skill teaches agents to use the `qt` CLI as the source of truth for eval runs: initialize local state, run benchmarks and custom workflows, inspect sample-level outputs, compare run history, resume interrupted work, and summarize regressions in a reviewable format.
-
-## Why this exists
-
-Coding agents can make evals part of the development loop, but only if they follow the same workflow every time. This skill gives agents durable Quantiles behavior so evaluation results are reproducible, traceable, and useful in engineering review.
-
-It is designed for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, OpenCode, and other coding agents that support reusable skills or instruction files.
+This skill teaches coding agents a repeatable Quantiles workflow using the `qt` CLI. It covers local initialization, benchmark and custom eval runs, sample-level inspection, run comparison, resume behavior, and regression summaries.
 
 ## What the skill does
 
-- Runs evaluations through `qt`.
-- Preserves run IDs, commands, inputs, metrics, stdout, stderr, and failure context.
-- Uses `qt run $BENCHMARK` to run built-in benchmarks and custom eval workflows.
-- Uses `qt show $RUN_ID` to inspect run results.
-- Uses `qt compare $RUN_ID_A $RUN_ID_B` to analyze changes between runs.
-- Uses `--json` to inspect structured result outputs.
-- Uses `--resume` when a run is interrupted or partially completed.
-- Reports aggregate metrics, sample-level results, failed samples, regressions, and next steps.
+This skill teaches coding agents to do the following:
+
+- Run evaluations through `qt`.
+- Preserve run IDs, commands, inputs, metrics, stdout, stderr, and failure context.
+- Use `qt run $BENCHMARK` to run built-in benchmarks and custom eval workflows.
+- Use `qt show $RUN_ID` to inspect run results.
+- Use `qt compare $RUN_ID_A $RUN_ID_B` to analyze changes between runs.
+- Use `--json` to inspect structured result outputs.
+- Use `qt resume` when a run is interrupted or partially completed.
+- Report aggregate metrics, sample-level results, failed samples, regressions, and next steps.
 
 ## Install
 
-Install the Quantiles CLI and make this skill available to your coding agent.
-
-For Codex-compatible skill discovery, copy or install this directory as `.agents/skills/quantiles/` in the target repository, so the skill file is available at `.agents/skills/quantiles/SKILL.md`. Other coding agents may use different skill locations or import flows.
-
-For repository-specific behavior, create an `AGENTS.md` file in the target project, or add Quantiles guidance to the existing repository-level `AGENTS.md`. In this repository, the root agent guide is [`../AGENTS.md`](../AGENTS.md).
-
-### Verify the install
-
-The easiest way to validate the setup is to run a test evaluation that does not use your own model or API keys. The demo sampler handles the run locally, so no inference costs are incurred.
+Install the Quantiles CLI and make this skill available to your coding agent with the following prompt:
 
 ```text
-Use the Quantiles eval skill. Run the SimpleQA Verified benchmark and summarize the results.
+Please install the Quantiles skill at github.com/quantiles-evals/skill
 ```
 
-After validating the workflow, you can begin running evaluations with your own models, benchmarks, and sample sizes.
+Alternatively, copy this repository's [`SKILL.md`](./SKILL.md) to the location on disk your coding agent expects to find skills.
 
-## Expected workflow
+After your agent completes the install, have it run its first benchmark using the following prompt
 
-1. Confirm the repository has a Quantiles workspace.
-2. Run the requested benchmark or workflow with `qt`.
-3. Capture the returned run ID.
-4. Inspect the run with `qt show <run_id>`.
-5. Compare against a baseline when requested with `qt compare <run_id_a> <run_id_b>`.
-6. Report aggregate metrics, sample-level results, failures, and next steps.
+```text
+Use the Quantiles skill to run the SimpleQA Verified benchmark and summarize the results.
+```
 
-## Local-first behavior
-
-Quantiles stores run history and sample-level results locally in the repository workspace. Agents should treat the local Quantiles database as the source of truth and avoid inventing results, skipping inspection, or reporting metrics without a run ID.
-
-## Related files
-
-- [`SKILL.md`](./SKILL.md) defines reusable Quantiles behavior for coding agents.
-- [`../AGENTS.md`](../AGENTS.md) defines repository-specific rules for this repository.
-- `llms.txt` helps agents discover documentation and high-signal references.
-- The main Quantiles documentation explains the CLI, SDKs, benchmarks, and run comparison workflow.
-
-## License
-
-This skill follows the license of the Quantiles repository.
+>Note: this prompt uses a demo model which generates random text and does not use any hosted LLM provider and does not incur any inference cost.
