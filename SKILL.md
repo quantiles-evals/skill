@@ -15,8 +15,8 @@ Always pass `--json` when using `qt run`, `qt list`, `qt show`, or `qt compare` 
 
 Use this skill when the user asks to:
 
-- Run a built-in Quantiles benchmark (e.g. `pubmedqa`, `simpleqa-verified`)
-- Run a custom code Quantiles evaluation
+- Run and/or configure a built-in Quantiles benchmark (e.g. `pubmedqa`, `simpleqa-verified`)
+- Run and/or configure a custom code Quantiles evaluation
 - Inspect or analyze a Quantiles eval run
 - Compare two Quantiles eval runs
 - Resume a failed or interrupted Quantiles eval run
