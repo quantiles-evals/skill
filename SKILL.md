@@ -154,14 +154,13 @@ For provider-backed model runs, use a small limit first unless the user explicit
 
 ## JSON output
 
-Always pass `--json` to:
+Always pass `--json` to the following commands:
 
-```bash
-qt run <eval-name> --json
-qt list --json
-qt show <run_id> --json
-qt compare <run_id_1> <run_id_2> --json
-```
+- `qt run <eval-name> --json`
+- `qt resume <run_id> --json`
+- `qt list --json`
+- `qt show <run_id> --json`
+- `qt compare <run_id_1> <run_id_2> --json`
 
 `qt run` returns structured data that usually includes:
 
@@ -182,11 +181,17 @@ Use the returned `run_id` to inspect the run later:
 qt show <run_id> --json
 ```
 
+Or, if the run failed, use the same returned `run_id` to resume the run from where it left off:
+
+```bash
+qt resume <run_id> --json
+```
+
 Do not paste large raw JSON into the response. Summarize the important fields.
 
 ## Customizing the model
 
-If the user wants the demo sampler, omit `model` and let the CLI use its default. Do not explicitly specify `demo-builtin` as a model.
+By default, the CLI uses the demo model. If the user wants to use this model, do not pass it in a `model` parameter.
 
 For provider-backed runs, pass a provider-prefixed `model` value:
 
