@@ -162,29 +162,32 @@ After running, report whether the run used the demo model or a real provider-bac
 
 ## Custom evals
 
-Use this section only when the user asks to write, modify, or convert a custom Quantiles eval.
+Use this section only when the user asks to write or modify a custom Quantiles eval.
 
-Like built-in evals, custom evals are run with the `qt` CLI. The `qt run` command starts a local Quantiles runtime, injects run metadata into the subprocess, records results, and tears down when done.
+Like built-in benchmarks, custom evals are run with the `qt` CLI. The `qt run` command starts a local Quantiles runtime, injects run metadata into the subprocess, records results, and tears down when done.
 
-Prefer the SDK and patterns already used by the repository.
+Prefer the SDK and try to adhere to coding patterns already used by the user's repository. Before writing code, inspect the project with the below commands to determine the following:
 
-Before writing code, inspect the project:
+- Whether they already have Python code (`pyproject.toml`, `requirements.txt`, `uv.lock`)
+- Whether they already have TypeScript code (`package.json`, `bun.lockb`, `pnpm-lock.yaml`)
+- Whether they already use the Quantiles SDK (`quantiles`)
+- Whether they already have written some evals with Quantiles (`eval`, `benchmark`)
 
 ```bash
 find . -maxdepth 3 -type f \( -name "pyproject.toml" -o -name "requirements.txt" -o -name "uv.lock" -o -name "package.json" -o -name "bun.lockb" -o -name "pnpm-lock.yaml" \)
 find . -maxdepth 4 -type f | grep -Ei 'quantiles|eval|benchmark'
 ```
 
-Do not invent SDK API details when local examples are available. Follow the local examples and dependency versions.
+Also consider whether the repository already has a `quantiles.toml` or `.quantiles.toml` configuration file. If so, it's possible that they are already building and running Quantiles custom code evaluations.
 
 ### Choose an SDK
 
 Quantiles supports multiple ways to write evals. Prefer the SDK and pattern already used by the repository.
 
-| SDK                                                                                                        | Best for                                                                                                      |
-| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Python SDK (at [github.com/quantiles-evals/python](https://github.com/quantiles-evals/python))             | Building lightweight, Quantiles-native evals with durable steps, emitted metrics, and local observability |
-| TypeScript SDK (at [github.com/quantiles-evals/typescript](https://github.com/quantiles-evals/typescript)) | Frontend-integrated, Node-based, or TypeScript-first evals                                                    |
+| SDK | Best for |
+| --- | --- |
+| Python SDK ([github.com/quantiles-evals/quantiles/tree/main/python](https://github.com/quantiles-evals/quantiles/tree/main/python)) | Building lightweight, Quantiles-native evals with durable steps, emitted metrics, and local observability |
+| TypeScript SDK (at [github.com/quantiles-evals/quantiles/tree/main/typescript](https://github.com/quantiles-evals/quantiles/tree/main/typescript)) | Frontend-integrated, Node-based, or TypeScript-first evals |
 
 If the user is already using Python to build their app, and wants to build a custom Quantiles eval, advise them to use the Python SDK. If they already have a large frontend or Node codebase, advise them to use the Typescript one. Ultimately, the choice of which to use is for them to make. Do not impose a choice on them.
 
@@ -195,12 +198,12 @@ The user should use Python when:
 - Their repository is Python-first
 - Their eval needs convenient dataset loading, scoring, model calls, or analysis in Python
 - They already have ad-hoc Python eval scripts
-- The project uses `uv` or has a `pyproject.toml`
+- The project uses `uv` or has a `pyproject.toml` file
 - They already have custom Quantiles evals written in Python
 
 A Python Quantiles eval should generally include:
 
-- A workflow name
+- An eval name (called `workflow` in the SDK) name
 - An async handler
 - Input JSON parsing
 - Deterministic sample IDs
@@ -221,19 +224,13 @@ Important rules:
 - If using `dataset()`, call it inside the handler when it needs `WorkflowContext`.
 - Keep provider credentials in environment variables, not source code.
 
-Run a Python custom eval with:
+Prior to running a custom eval, a `quantiles.toml` or `.quantiles.toml` config file is necessary, at least to set up the command that must be run for the eval. See [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details on how to do so. Once the config file is in place, run the Python custom eval with:
 
 ```bash
-qt run <eval-name> --input '{"key":"value"}' --json -- uv run python <eval-file>.py
+qt run <eval-name>
 ```
 
-Example:
-
-```bash
-qt run my-eval --input '{"limit":25}' --json -- uv run python my_eval.py
-```
-
-If the project does not use `uv`, use the project’s existing Python execution command.
+If the project does not use `uv`, use the project's existing Python execution command.
 
 ### TypeScript custom eval guidance
 
