@@ -227,7 +227,7 @@ Important rules:
 Prior to running a custom eval, a `quantiles.toml` or `.quantiles.toml` config file is necessary, at least to set up the command that must be run for the eval. See [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details on how to do so. Once the config file is in place, run the Python custom eval with:
 
 ```bash
-qt run <eval-name>
+qt run <eval-name> --json
 ```
 
 If the project does not use `uv`, use the project's existing Python execution command.
@@ -250,51 +250,17 @@ A TypeScript Quantiles eval should generally include:
 - A returned JSON summary
 - `entrypoint()` registration
 
-Run a TypeScript custom eval with:
+Prior to running a custom eval, a `quantiles.toml` or `.quantiles.toml` config file is necessary, at least to set up the command that must be run for the eval. See [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details on how to do so. Once the config file is in place, run the TypeScript custom eval with:
 
 ```bash
-qt run <eval-name> --input '{"key":"value"}' --json -- bun run <eval-file>.ts
-```
-
-Example:
-
-```bash
-qt run my-eval --input '{"limit":25}' --json -- bun run my_eval.ts
+qt run <eval-name> --json
 ```
 
 If the project uses `npm`, `pnpm`, `yarn`, or `tsx` instead of Bun, use the project’s existing TypeScript execution command.
 
-### Running custom evals
-
-Run Python custom evals with:
-
-```bash
-qt run my-eval --input '{"key":"value"}' --json -- uv run python my_eval.py
-```
-
-Run TypeScript custom evals with:
-
-```bash
-qt run my-eval --input '{"key":"value"}' --json -- bun run my_eval.ts
-```
-
-Place `--json` before the custom command separator `--`.
-
-Correct:
-
-```bash
-qt run my-eval --input '{"limit":10}' --json -- uv run python my_eval.py
-```
-
-Incorrect:
-
-```bash
-qt run my-eval --input '{"limit":10}' -- uv run python my_eval.py --json
-```
-
 ### Custom eval environment variables
 
-When `qt run` executes a custom eval command, Quantiles injects runtime metadata into the subprocess.
+When `qt run` executes a custom eval command (specified in the config file), Quantiles injects runtime metadata into the subprocess.
 
 Common environment variables include:
 
@@ -305,7 +271,7 @@ Common environment variables include:
 
 The SDKs discussed above should automatically detect and handle these variables.
 
-Do not manually parse these variables unless the user is not using an SDK or they explicitly asks for lower-level integration.
+Do not manually parse these variables unless the user explicitly asks for lower-level integration.
 
 ### Converting ad-hoc eval scripts
 
@@ -314,10 +280,10 @@ When converting an ad-hoc eval script into a Quantiles eval:
 1. Preserve the existing dataset loading logic.
 2. Preserve the existing model, prompt, scorer, and metric behavior unless the user asks for changes.
 3. Wrap the eval in a Quantiles workflow.
-4. Move per-sample model calls or scoring into durable steps.
-5. Use deterministic step keys based on sample IDs.
+4. Move per-sample model calls or scoring into durable `step`s.
+5. Use deterministic `step` keys based on sample IDs.
 6. Emit aggregate metrics with `emit()`.
-7. Return a JSON summary.
+7. Always pass the `--json` flag to `qt` commands, and return a JSON summary of the results.
 8. Run with a small sample limit first.
 9. Inspect the result with `qt show <run_id> --json`.
 10. Compare against the original ad-hoc result if available.
