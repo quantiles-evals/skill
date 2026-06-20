@@ -45,7 +45,7 @@ Follow these rules for all Quantiles work:
 6. Do not claim a demo model run measures real model quality.
 7. Do not run external provider-backed evals unless the user asked for a real model run or provided a model name.
 8. For external model runs, verify the required provider API key is configured without printing the key value.
-9. For small sample counts (i.e. the number of samples in the run is a small fraction of the total samples in the benchmark or eval), warn the user to be cautious in interpreting the results given the same sample size.
+9. For small sample counts (i.e. the number of samples in the run is a small fraction of the total samples in the benchmark or eval), warn the user to be cautious in interpreting the results given the small sample size.
 10. Before saying one run is better than another, check whether the runs are comparable.
 11. Never print, log, or expose API key values.
 
@@ -300,18 +300,7 @@ Always pass `--json` to the following commands:
 - `qt show <run_id> --json`
 - `qt compare <run_id_1> <run_id_2> --json`
 
-`qt run` returns structured data that usually includes:
-
-- `run_id`
-- eval name
-- input JSON
-- command used
-- status
-- success or failure
-- exit code, if present
-- duration, if present
-- summary metrics, if available
-- stdout, stderr, or errors, if available
+`qt run` returns structured data that includes the `run_id` and eval name. Inspect the output to extract the information and analyses the user requests.
 
 Use the returned `run_id` to inspect the run later:
 
@@ -335,31 +324,16 @@ If an eval has already run, use its `run_id` with `qt show`:
 qt show <run_id> --json
 ```
 
-`qt show` returns structured information about the run. Use it to summarize:
+If you do not have a `run_id`, use `qt list --json` to get a complete JSON list of all runs, then find the `run_id` in the list.
 
-- Run ID
-- eval name
-- Input JSON
-- Model or sampler
-- Status
-- Success or failure
-- Exit code, if present
-- Duration, if present
-- Aggregate metrics
-- Sample count
-- Sample-specific metrics, inputs, and outputs
-- Failed, errored, or low-scoring samples
-- Notable stdout, stderr, or error messages
+`qt show` returns structured information about the run, including the `run_id` and eval name. Inspect the output to extract the information and analyses the user requests. When the user asks what happened in a run, inspect both aggregate metrics and sample-level results.
 
-When the user asks what happened in a run, inspect both aggregate metrics and sample-level results.
-
-## Sample-level analysis
+### Sample-level analysis
 
 When analyzing a run, use this process:
 
-1. Read aggregate metrics first.
-2. Identify failed, errored, abstained, hedged, or low-scoring samples.
-3. Group failures by likely cause:
+1. Identify failed, errored, abstained, hedged, or low-scoring samples.
+2. Group failures by likely cause, for example:
    - model answer wrong
    - model abstained, refused, or hedged
    - grader or scorer issue
@@ -368,9 +342,8 @@ When analyzing a run, use this process:
    - runtime or dependency error
    - ambiguous dataset item
    - expected-answer mismatch
-
-4. Summarize representative sample IDs.
-5. Recommend a next action:
+3. Summarize representative sample IDs.
+4. Recommend a next action, for example:
    - inspect specific samples
    - compare against another run
    - rerun with a larger sample count
@@ -379,7 +352,7 @@ When analyzing a run, use this process:
    - fix runtime dependencies
    - run a provider-backed eval instead of a demo sampler eval
 
-For small sample counts, call the analysis preliminary.
+For small sample counts (i.e. the number of samples in the run is a small fraction of the total samples in the benchmark or eval), warn the user to be cautious in interpreting the results given the small sample.
 
 ## Listing runs
 
