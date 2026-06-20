@@ -534,35 +534,9 @@ If the run is not found or marked "completed", resume is not possible.
 
 ### Comparison is confusing
 
-Use `qt show` on both runs:
+Use `qt show` on both runs to check the benchmark/eval name, input JSON, sample count, model, scorer, and metric definitions before interpreting the comparison:
 
 ```bash
 qt show <run_id_1> --json
 qt show <run_id_2> --json
-```
-
-Check benchmark name, input JSON, sample count, model, sampler, scorer, and metric definitions before interpreting the comparison.
-
-## Skill quality checks
-
-When editing this skill, test it against should-trigger and should-not-trigger prompts.
-
-Should trigger:
-
-```text
-Run simpleqa-verified with 10 samples and tell me the run ID.
-Compare these two Quantiles runs.
-Inspect this Quantiles run and summarize the failed samples.
-Resume this failed Quantiles workflow.
-Convert this Python eval script into a Quantiles workflow.
-```
-
-Should not trigger:
-
-```text
-Explain quantiles and percentiles.
-How do I compute the 95th percentile in NumPy?
-What is the median of this distribution?
-Compare MMLU and GPQA conceptually.
-Write a pytest unit test for this function.
 ```
