@@ -39,15 +39,15 @@ Follow these rules for all Quantiles work:
 
 1. Use the `qt` CLI as the source of truth.
 2. Prefer CLI output over manually reading `.quantiles/` files. Never manually edit or delete `.quantiles/` files unless explicitly asked.
-2. Use `--json` for `qt run`, `qt resume`, `qt list`, `qt show`, and `qt compare`.
-3. Report the exact command used.
-4. Report the `run_id` after every successful run.
-5. Do not claim a demo sampler run measures real model quality.
-6. Do not run external provider-backed evals unless the user asked for a real model run or provided a model name.
-7. For external model runs, verify the required provider API key is configured without printing the key value.
-8. For small sample counts, describe the run as a smoke test, not a statistically reliable benchmark.
-9. Before saying one run is better than another, check whether the runs are comparable.
-10. Never print, log, or expose API key values.
+3. Use `--json` for `qt run`, `qt resume`, `qt list`, `qt show`, and `qt compare`.
+4. Report the exact command used.
+5. Report the `run_id` after every successful run.
+6. Do not claim a demo model run measures real model quality.
+7. Do not run external provider-backed evals unless the user asked for a real model run or provided a model name.
+8. For external model runs, verify the required provider API key is configured without printing the key value.
+9. For small sample counts (i.e. the number of samples in the run is a small fraction of the total samples in the benchmark or eval), warn the user to be cautious in interpreting the results given the same sample size.
+10. Before saying one run is better than another, check whether the runs are comparable.
+11. Never print, log, or expose API key values.
 
 ## Preflight checks
 
