@@ -530,13 +530,7 @@ Inspect the failed run first:
 qt show <run_id> --json
 ```
 
-Then check the installed CLI syntax:
-
-```bash
-qt run --help
-```
-
-Use the resume syntax supported by the installed CLI.
+If the run is not found or marked "completed", resume is not possible.
 
 ### Comparison is confusing
 
