@@ -54,12 +54,10 @@ Follow these rules for all Quantiles work:
 Before running Quantiles commands, check whether `qt` is installed:
 
 ```bash
-command -v qt && qt --version
+qt --version
 ```
 
-If `qt` is missing, do not install it unless the user asked for setup or the task cannot proceed without installation.
-
-If installation is needed, use the project’s documented install command. Do not run network installers without user approval. Otherwise, the standard Quantiles CLI install command is:
+If `qt` is missing, tell the user it's missing, and confirm that they want to proceed with installation. After they confirm, install it with the following command:
 
 ```bash
 curl -fsSL https://cli.quantiles.io/install.sh | bash
@@ -68,7 +66,7 @@ curl -fsSL https://cli.quantiles.io/install.sh | bash
 After installation, verify that `qt` is available:
 
 ```bash
-command -v qt && qt --version
+qt --version
 ```
 
 If the repository has not been initialized and the user asked to run or create Quantiles evals, initialize it:
@@ -81,15 +79,7 @@ Do not run `qt init` repeatedly without checking whether the repository is alrea
 
 ## Secrets and cost safety
 
-Provider-backed evals may cost money. Demo-sampler evals are safe for smoke testing.
-
-Only run a provider-backed eval when the user asks for a real model run or provides a model name. Never print API key values. Check whether the required credential is present without revealing it:
-
-```bash
-test -n "$OPENAI_API_KEY" && echo "OPENAI_API_KEY is set"
-test -n "$ANTHROPIC_API_KEY" && echo "ANTHROPIC_API_KEY is set"
-test -n "$GEMINI_API_KEY" && echo "GEMINI_API_KEY is set"
-```
+Only run a provider-backed eval (e.g. an eval that uses a hosted LLM provider, like OpenAI or Anthropic) when the user asks for a real model run or provides a model name. Never print API key values. Check whether the required credential is present without revealing it.
 
 Use the provider prefix in `model` to decide which key to check:
 
@@ -97,9 +87,27 @@ Use the provider prefix in `model` to decide which key to check:
 - `anthropic:<model>` requires `ANTHROPIC_API_KEY`
 - `gemini:<model>` requires `GEMINI_API_KEY`
 
-If the required key is missing, stop before running the provider-backed eval and report which environment variable is missing. If the selected provider uses a different key, use the provider-specific environment variable required by that model or SDK.
+To test for the OpenAI API key, use the following:
 
-If the user asks for a real model run but does not specify a sample count, start with a small smoke-test limit unless the user explicitly asks for a larger run.
+```bash
+test -n "$OPENAI_API_KEY" && echo "OPENAI_API_KEY is set"
+```
+
+To test for the Anthropic API key:
+
+```bash
+test -n "$ANTHROPIC_API_KEY" && echo "ANTHROPIC_API_KEY is set"
+```
+
+To test for the Gemini API key:
+
+```bash
+test -n "$GEMINI_API_KEY" && echo "GEMINI_API_KEY is set"
+```
+
+If the required environment variable is missing, stop before running the provider-backed eval and report which is missing. If the selected provider uses a different key, use the provider-specific environment variable required by that model or SDK.
+
+If the user asks for an evaluation run with a hosted model, but does not specify a sample count, start with a small smoke-test limit unless the user explicitly asks for a larger run.
 
 ## Built-in eval reference
 
@@ -116,16 +124,16 @@ Run a built-in eval with:
 qt run <eval-name> --json
 ```
 
-Example:
-
-```bash
-qt run pubmedqa --json
-```
-
 For initial eval validation, prefer a small local smoke test:
 
 ```bash
-qt run simpleqa-verified --input '{"limit":10}' --json
+qt run simpleqa-verified --json --input '{"samples": 10"}'
+```
+
+If the test succeeds, and the user approves running the full dataset, remove the `--input` parameter to run the complete benchmark:
+
+```bash
+qt run simpleqa-verified --json
 ```
 
 When no real model is specified, built-in evals may use the default demo sampler. Demo sampler runs are useful for validating the CLI, run history, JSON output, metrics, and sample-level result shape. Do not treat demo sampler results as valid model-quality benchmark results.
