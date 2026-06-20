@@ -109,7 +109,7 @@ If the required environment variable is missing, stop before running the provide
 
 If the user asks for an evaluation run with a hosted model, but does not specify a sample count, start with a small smoke-test limit unless the user explicitly asks for a larger run.
 
-## Built-in benchmark reference
+## Running built-in benchmarks
 
 The `qt` CLI includes built-in evals such as:
 
@@ -159,6 +159,173 @@ If the user requests to use a hosted LLM provider, configure it in the `quantile
 Before running a provider-backed eval, follow the credential checks in the "Secrets and cost safety" section. For shell command examples, use the project’s documented default model when available; otherwise, use a concrete provider-prefixed model string.
 
 After running, report whether the run used the demo model or a real provider-backed model.
+
+## Custom evals
+
+Use this section only when the user asks to write, modify, or convert a custom Quantiles eval.
+
+Like built-in evals, custom evals are run with the `qt` CLI. The `qt run` command starts a local Quantiles runtime, injects run metadata into the subprocess, records results, and tears down when done.
+
+Prefer the SDK and patterns already used by the repository.
+
+Before writing code, inspect the project:
+
+```bash
+find . -maxdepth 3 -type f \( -name "pyproject.toml" -o -name "requirements.txt" -o -name "uv.lock" -o -name "package.json" -o -name "bun.lockb" -o -name "pnpm-lock.yaml" \)
+find . -maxdepth 4 -type f | grep -Ei 'quantiles|eval|benchmark'
+```
+
+Do not invent SDK API details when local examples are available. Follow the local examples and dependency versions.
+
+### Choose an SDK
+
+Quantiles supports multiple ways to write evals. Prefer the SDK and pattern already used by the repository.
+
+| SDK                                                                                                        | Best for                                                                                                      |
+| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Python SDK (at [github.com/quantiles-evals/python](https://github.com/quantiles-evals/python))             | Building lightweight, Quantiles-native evals with durable steps, emitted metrics, and local observability |
+| TypeScript SDK (at [github.com/quantiles-evals/typescript](https://github.com/quantiles-evals/typescript)) | Frontend-integrated, Node-based, or TypeScript-first evals                                                    |
+
+If the user is already using Python to build their app, and wants to build a custom Quantiles eval, advise them to use the Python SDK. If they already have a large frontend or Node codebase, advise them to use the Typescript one. Ultimately, the choice of which to use is for them to make. Do not impose a choice on them.
+
+### Python custom eval guidance
+
+The user should use Python when:
+
+- Their repository is Python-first
+- Their eval needs convenient dataset loading, scoring, model calls, or analysis in Python
+- They already have ad-hoc Python eval scripts
+- The project uses `uv` or has a `pyproject.toml`
+- They already have custom Quantiles evals written in Python
+
+A Python Quantiles eval should generally include:
+
+- A workflow name
+- An async handler
+- Input JSON parsing
+- Deterministic sample IDs
+- Durable `step()` calls for per-sample work
+- `emit()` calls for metrics
+- A returned JSON summary
+- `entrypoint()` registration
+
+Important rules:
+
+- eval names must be stable and unique within the file.
+- `entrypoint()` uses `QUANTILES_WORKFLOW_NAME` from the CLI.
+- `step()` caches by `step_key`.
+- Use deterministic step keys, usually based on sample IDs.
+- Include all cache-invalidating values in step inputs.
+- `emit()` writes metrics to the local Quantiles run store so they appear in `qt show` and `qt compare`.
+- Do not call dataset-loading helpers at module import time if they require runtime context.
+- If using `dataset()`, call it inside the handler when it needs `WorkflowContext`.
+- Keep provider credentials in environment variables, not source code.
+
+Run a Python custom eval with:
+
+```bash
+qt run <eval-name> --input '{"key":"value"}' --json -- uv run python <eval-file>.py
+```
+
+Example:
+
+```bash
+qt run my-eval --input '{"limit":25}' --json -- uv run python my_eval.py
+```
+
+If the project does not use `uv`, use the project’s existing Python execution command.
+
+### TypeScript custom eval guidance
+
+The user should use TypeScript when:
+
+- Their repository is TypeScript-first
+- Their eval is part of a Node, Bun, or Next.js workflow
+- They explicitly ask for TypeScript
+- They already have custom Quantiles evals written in Typescript
+
+A TypeScript Quantiles eval should generally include:
+
+- An eval name
+- Input JSON parsing
+- Durable per-sample `step()` calls
+- `emit()` calls for metrics
+- A returned JSON summary
+- `entrypoint()` registration
+
+Run a TypeScript custom eval with:
+
+```bash
+qt run <eval-name> --input '{"key":"value"}' --json -- bun run <eval-file>.ts
+```
+
+Example:
+
+```bash
+qt run my-eval --input '{"limit":25}' --json -- bun run my_eval.ts
+```
+
+If the project uses `npm`, `pnpm`, `yarn`, or `tsx` instead of Bun, use the project’s existing TypeScript execution command.
+
+### Running custom evals
+
+Run Python custom evals with:
+
+```bash
+qt run my-eval --input '{"key":"value"}' --json -- uv run python my_eval.py
+```
+
+Run TypeScript custom evals with:
+
+```bash
+qt run my-eval --input '{"key":"value"}' --json -- bun run my_eval.ts
+```
+
+Place `--json` before the custom command separator `--`.
+
+Correct:
+
+```bash
+qt run my-eval --input '{"limit":10}' --json -- uv run python my_eval.py
+```
+
+Incorrect:
+
+```bash
+qt run my-eval --input '{"limit":10}' -- uv run python my_eval.py --json
+```
+
+### Custom eval environment variables
+
+When `qt run` executes a custom eval command, Quantiles injects runtime metadata into the subprocess.
+
+Common environment variables include:
+
+- `QUANTILES_BASE_URL` — local server URL, often `http://127.0.0.1:8765`
+- `QUANTILES_RUN_ID` — existing run ID, if resuming
+- `QUANTILES_WORKFLOW_NAME` — eval name passed to `qt run`
+- `QUANTILES_INPUT` — JSON input from `--input`
+
+The SDKs discussed above should automatically detect and handle these variables.
+
+Do not manually parse these variables unless the user is not using an SDK or they explicitly asks for lower-level integration.
+
+### Converting ad-hoc eval scripts
+
+When converting an ad-hoc eval script into a Quantiles eval:
+
+1. Preserve the existing dataset loading logic.
+2. Preserve the existing model, prompt, scorer, and metric behavior unless the user asks for changes.
+3. Wrap the eval in a Quantiles workflow.
+4. Move per-sample model calls or scoring into durable steps.
+5. Use deterministic step keys based on sample IDs.
+6. Emit aggregate metrics with `emit()`.
+7. Return a JSON summary.
+8. Run with a small sample limit first.
+9. Inspect the result with `qt show <run_id> --json`.
+10. Compare against the original ad-hoc result if available.
+
+First preserve behavior, then make it durable and observable.
 
 ## JSON output
 
@@ -341,173 +508,6 @@ It is not currently possible to delete Quantiles eval runs through the CLI.
 If the user asks to delete or remove eval runs, explain that deletion is not available. Offer to hide, filter, or exclude that group from displayed results instead, such as hiding failed runs or filtering the run list by status.
 
 Do not manually delete or modify Quantiles local storage files unless the user explicitly asks and understands that this may corrupt run history.
-
-## Custom evals
-
-Use this section only when the user asks to write, modify, or convert a custom Quantiles eval.
-
-Like built-in evals, custom evals are run with the `qt` CLI. The `qt run` command starts a local Quantiles runtime, injects run metadata into the subprocess, records results, and tears down when done.
-
-Prefer the SDK and patterns already used by the repository.
-
-Before writing code, inspect the project:
-
-```bash
-find . -maxdepth 3 -type f \( -name "pyproject.toml" -o -name "requirements.txt" -o -name "uv.lock" -o -name "package.json" -o -name "bun.lockb" -o -name "pnpm-lock.yaml" \)
-find . -maxdepth 4 -type f | grep -Ei 'quantiles|eval|benchmark'
-```
-
-Do not invent SDK API details when local examples are available. Follow the local examples and dependency versions.
-
-## Choose an SDK
-
-Quantiles supports multiple ways to write evals. Prefer the SDK and pattern already used by the repository.
-
-| SDK                                                                                                        | Best for                                                                                                      |
-| ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Python SDK (at [github.com/quantiles-evals/python](https://github.com/quantiles-evals/python))             | Building lightweight, Quantiles-native evals with durable steps, emitted metrics, and local observability |
-| TypeScript SDK (at [github.com/quantiles-evals/typescript](https://github.com/quantiles-evals/typescript)) | Frontend-integrated, Node-based, or TypeScript-first evals                                                    |
-
-If the user is already using Python to build their app, and wants to build a custom Quantiles eval, advise them to use the Python SDK. If they already have a large frontend or Node codebase, advise them to use the Typescript one. Ultimately, the choice of which to use is for them to make. Do not impose a choice on them.
-
-## Python custom eval guidance
-
-The user should use Python when:
-
-- Their repository is Python-first
-- Their eval needs convenient dataset loading, scoring, model calls, or analysis in Python
-- They already have ad-hoc Python eval scripts
-- The project uses `uv` or has a `pyproject.toml`
-- They already have custom Quantiles evals written in Python
-
-A Python Quantiles eval should generally include:
-
-- A workflow name
-- An async handler
-- Input JSON parsing
-- Deterministic sample IDs
-- Durable `step()` calls for per-sample work
-- `emit()` calls for metrics
-- A returned JSON summary
-- `entrypoint()` registration
-
-Important rules:
-
-- eval names must be stable and unique within the file.
-- `entrypoint()` uses `QUANTILES_WORKFLOW_NAME` from the CLI.
-- `step()` caches by `step_key`.
-- Use deterministic step keys, usually based on sample IDs.
-- Include all cache-invalidating values in step inputs.
-- `emit()` writes metrics to the local Quantiles run store so they appear in `qt show` and `qt compare`.
-- Do not call dataset-loading helpers at module import time if they require runtime context.
-- If using `dataset()`, call it inside the handler when it needs `WorkflowContext`.
-- Keep provider credentials in environment variables, not source code.
-
-Run a Python custom eval with:
-
-```bash
-qt run <eval-name> --input '{"key":"value"}' --json -- uv run python <eval-file>.py
-```
-
-Example:
-
-```bash
-qt run my-eval --input '{"limit":25}' --json -- uv run python my_eval.py
-```
-
-If the project does not use `uv`, use the project’s existing Python execution command.
-
-## TypeScript custom eval guidance
-
-The user should use TypeScript when:
-
-- Their repository is TypeScript-first
-- Their eval is part of a Node, Bun, or Next.js workflow
-- They explicitly ask for TypeScript
-- They already have custom Quantiles evals written in Typescript
-
-A TypeScript Quantiles eval should generally include:
-
-- An eval name
-- Input JSON parsing
-- Durable per-sample `step()` calls
-- `emit()` calls for metrics
-- A returned JSON summary
-- `entrypoint()` registration
-
-Run a TypeScript custom eval with:
-
-```bash
-qt run <eval-name> --input '{"key":"value"}' --json -- bun run <eval-file>.ts
-```
-
-Example:
-
-```bash
-qt run my-eval --input '{"limit":25}' --json -- bun run my_eval.ts
-```
-
-If the project uses `npm`, `pnpm`, `yarn`, or `tsx` instead of Bun, use the project’s existing TypeScript execution command.
-
-## Running custom evals
-
-Run Python custom evals with:
-
-```bash
-qt run my-eval --input '{"key":"value"}' --json -- uv run python my_eval.py
-```
-
-Run TypeScript custom evals with:
-
-```bash
-qt run my-eval --input '{"key":"value"}' --json -- bun run my_eval.ts
-```
-
-Place `--json` before the custom command separator `--`.
-
-Correct:
-
-```bash
-qt run my-eval --input '{"limit":10}' --json -- uv run python my_eval.py
-```
-
-Incorrect:
-
-```bash
-qt run my-eval --input '{"limit":10}' -- uv run python my_eval.py --json
-```
-
-## Custom eval environment variables
-
-When `qt run` executes a custom eval command, Quantiles injects runtime metadata into the subprocess.
-
-Common environment variables include:
-
-- `QUANTILES_BASE_URL` — local server URL, often `http://127.0.0.1:8765`
-- `QUANTILES_RUN_ID` — existing run ID, if resuming
-- `QUANTILES_WORKFLOW_NAME` — eval name passed to `qt run`
-- `QUANTILES_INPUT` — JSON input from `--input`
-
-The SDKs discussed above should automatically detect and handle these variables.
-
-Do not manually parse these variables unless the user is not using an SDK or they explicitly asks for lower-level integration.
-
-## Converting ad-hoc eval scripts
-
-When converting an ad-hoc eval script into a Quantiles eval:
-
-1. Preserve the existing dataset loading logic.
-2. Preserve the existing model, prompt, scorer, and metric behavior unless the user asks for changes.
-3. Wrap the eval in a Quantiles workflow.
-4. Move per-sample model calls or scoring into durable steps.
-5. Use deterministic step keys based on sample IDs.
-6. Emit aggregate metrics with `emit()`.
-7. Return a JSON summary.
-8. Run with a small sample limit first.
-9. Inspect the result with `qt show <run_id> --json`.
-10. Compare against the original ad-hoc result if available.
-
-First preserve behavior, then make it durable and observable.
 
 ## Reporting template
 
