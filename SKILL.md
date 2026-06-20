@@ -9,7 +9,7 @@ Use this skill for Quantiles AI evaluation work. The `qt` CLI is the canonical e
 
 Prefer `qt` CLI commands over manually reading local Quantiles storage files unless the CLI output is insufficient. Never modify local Quantiles storage files, except via `qt` CLI commands.
 
-Always pass `--json` when using `qt run`, `qt list`, `qt show`, or `qt compare` so results can be parsed reliably.
+Always pass `--json` when using `qt run`, `qt resume`, `qt list`, `qt show`, or `qt compare` so results can be parsed reliably.
 
 ## When to use this skill
 
@@ -17,7 +17,7 @@ Use this skill when the user asks to:
 
 - Run and/or configure a built-in Quantiles benchmark (e.g. `pubmedqa`, `simpleqa-verified`)
 - Run and/or configure a custom code Quantiles evaluation
-- Inspect or analyze a Quantiles eval run
+- Inspect and analyze a Quantiles eval run
 - Compare two Quantiles eval runs
 - Resume a failed or interrupted Quantiles eval run
 - Debug failed samples, metrics, scorers, or run outputs
@@ -28,10 +28,10 @@ Use this skill when the user asks to:
 
 Do not use this skill for:
 
-- General statistics questions about quantiles, percentiles, medians, or distributions
-- Non-Quantiles eval frameworks unless the user asks to convert them into Quantiles evals
-- Reporting demo sampler runs as valid model-quality benchmark results
-- Manually editing Quantiles run storage unless the user explicitly asks and the CLI cannot do the task
+- General statistics questions about quantiles, percentiles, medians, or distributions, that are unrelated to benchmarks or evals run via the `qt` CLI.
+- Non-Quantiles eval frameworks unless the user asks to convert them into Quantiles evals.
+- Reporting demo model runs as valid model-quality benchmark results.
+- Manually editing Quantiles run storage.
 
 ## Core rules
 
@@ -39,7 +39,7 @@ Follow these rules for all Quantiles work:
 
 1. Use the `qt` CLI as the source of truth.
 2. Prefer CLI output over manually reading `.quantiles/` files. Never manually edit or delete `.quantiles/` files unless explicitly asked.
-2. Use `--json` for `qt run`, `qt list`, `qt show`, and `qt compare`.
+2. Use `--json` for `qt run`, `qt resume`, `qt list`, `qt show`, and `qt compare`.
 3. Report the exact command used.
 4. Report the `run_id` after every successful run.
 5. Do not claim a demo sampler run measures real model quality.
