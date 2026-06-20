@@ -7,31 +7,19 @@ description: Use when writing, running, inspecting, comparing, resuming, or anal
 
 Use this skill for Quantiles AI evaluation work. The `qt` CLI is the canonical entrypoint for running benchmarks and evaluations, inspecting run results, comparing runs, resuming interrupted evals, and executing custom Python or TypeScript eval workflows.
 
-Prefer `qt` CLI commands over manually reading local Quantiles storage files unless the CLI output is insufficient.
+Prefer `qt` CLI commands over manually reading local Quantiles storage files unless the CLI output is insufficient. Never modify local Quantiles storage files, except via `qt` CLI commands.
 
 Always pass `--json` when using `qt run`, `qt list`, `qt show`, or `qt compare` so results can be parsed reliably.
-
-## Relationship to AGENTS.md
-
-This skill is a reusable Quantiles workflow, not a substitute for repository instructions.
-
-When working inside a repository, also follow the active `AGENTS.md` instruction chain for repository layout, package managers, coding style, tests, safety rules, and handoff requirements. If this skill gives a generic Quantiles command but the local `AGENTS.md`, README, or package configuration gives a more specific command, use the local command and report the choice.
-
-Precedence:
-
-1. Explicit user instructions.
-2. The nearest applicable `AGENTS.md` for repository-specific implementation and validation.
-3. This skill for Quantiles eval execution, inspection, comparison, resume, and reporting workflow.
 
 ## When to use this skill
 
 Use this skill when the user asks to:
 
-- Run a Quantiles evaluation
-- Run a built-in Quantiles benchmark
-- Inspect or analyze one or more Quantiles eval runs
+- Run a built-in Quantiles benchmark (e.g. `pubmedqa`, `simpleqa-verified`)
+- Run a custom code Quantiles evaluation
+- Inspect or analyze a Quantiles eval run
 - Compare two Quantiles eval runs
-- Resume a failed or interrupted Quantiles eval
+- Resume a failed or interrupted Quantiles eval run
 - Debug failed samples, metrics, scorers, or run outputs
 - Write a new custom eval using the Quantiles Python SDK or TypeScript SDK
 - Convert an ad-hoc Python or TypeScript eval script into a durable Quantiles eval
