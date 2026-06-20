@@ -109,7 +109,7 @@ If the required environment variable is missing, stop before running the provide
 
 If the user asks for an evaluation run with a hosted model, but does not specify a sample count, start with a small smoke-test limit unless the user explicitly asks for a larger run.
 
-## Built-in eval reference
+## Built-in benchmark reference
 
 The `qt` CLI includes built-in evals such as:
 
@@ -136,16 +136,16 @@ If the test succeeds, and the user approves running the full dataset, remove the
 qt run simpleqa-verified --json
 ```
 
-When no real model is specified, built-in evals may use the default demo sampler. Demo sampler runs are useful for validating the CLI, run history, JSON output, metrics, and sample-level result shape. Do not treat demo sampler results as valid model-quality benchmark results.
+The above examples use a demo model, which, as described above, just generates random text. If the user requests to use a hosted LLM provider, configure that in the `quantiles.toml` config file. See [`github.com/quantiles-evals/quantiles/blob/main/CONFIG.md`](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details.
 
-## Limiting sample count
+### Limiting sample count
 
-For built-in evals, pass a JSON `limit` key through `--input`.
+For built-in evals, pass a JSON `samples` key through `--input`.
 
 Example:
 
 ```bash
-qt run simpleqa-verified --input '{"limit":100}' --json
+qt run simpleqa-verified --input '{"samples":100}' --json
 ```
 
 Use small limits for smoke tests and larger limits only when the user wants a more complete benchmark run.
