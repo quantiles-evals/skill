@@ -1,6 +1,6 @@
+---
 name: quantiles
 description: Use when writing, running, inspecting, comparing, resuming, or analyzing Quantiles evaluation workflows with the qt CLI, Quantiles Python SDK, or Quantiles TypeScript SDK. Do not use for general statistics questions about quantiles or percentiles.
-
 ---
 
 # Quantiles eval workflows
@@ -184,10 +184,10 @@ Also consider whether the repository already has a `quantiles.toml` or `.quantil
 
 Quantiles supports multiple ways to write evals. Prefer the SDK and pattern already used by the repository.
 
-| SDK | Best for |
-| --- | --- |
-| Python SDK ([github.com/quantiles-evals/quantiles/tree/main/python](https://github.com/quantiles-evals/quantiles/tree/main/python)) | Building lightweight, Quantiles-native evals with durable steps, emitted metrics, and local observability |
-| TypeScript SDK (at [github.com/quantiles-evals/quantiles/tree/main/typescript](https://github.com/quantiles-evals/quantiles/tree/main/typescript)) | Frontend-integrated, Node-based, or TypeScript-first evals |
+| SDK                                                                                                                                                | Best for                                                                                                  |
+| -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Python SDK ([github.com/quantiles-evals/quantiles/tree/main/python](https://github.com/quantiles-evals/quantiles/tree/main/python))                | Building lightweight, Quantiles-native evals with durable steps, emitted metrics, and local observability |
+| TypeScript SDK (at [github.com/quantiles-evals/quantiles/tree/main/typescript](https://github.com/quantiles-evals/quantiles/tree/main/typescript)) | Frontend-integrated, Node-based, or TypeScript-first evals                                                |
 
 If the user is already using Python to build their app, and wants to build a custom Quantiles eval, advise them to use the Python SDK. If they already have a large frontend or Node codebase, advise them to use the Typescript one. Ultimately, the choice of which to use is for them to make. Do not impose a choice on them.
 
@@ -423,6 +423,25 @@ After resuming, report:
 - Final status
 - Any remaining errors
 
+## Result interpretation and model-quality summary
+
+When summarizing a completed eval run, include both the raw result and a high-level interpretation. Keep the interpretation calibrated to the eval's stated purpose, metric definitions, sample size, and model configuration.
+
+For every completed run summary, include:
+
+- The eval name and, when inferable, what capability or behavior it is intended to measure.
+- The model name and whether it is a real provider-backed model or `demo-builtin`.
+- The primary metrics and their values, using the metric names emitted by the eval.
+- The sample count and whether the run appears to be a smoke test, partial run, or full configured run.
+- A plain-English interpretation of what the result suggests.
+- Practical impact: whether the result is useful for debugging, regression detection, comparison, model selection, or only execution validation.
+- Caveats and limits: demo model, small sample size, unclear metric semantics, benchmark limitations, non-comparable runs, or missing sample-level detail.
+- A recommended next action.
+
+Do not impose a generic meaning on metrics. First use the eval's own documentation, config, emitted metric names, and sample-level outputs to infer what the metrics mean. If metric semantics are unclear, say so and give a cautious interpretation rather than pretending the meaning is known.
+
+Never claim `demo-builtin` results measure real model quality. For demo runs, interpret only benchmark execution, metric shape, sample distribution, and storage behavior.
+
 ## Suggested reporting template
 
 Below is an example template that could be used for reporting results after running, inspecting, comparing, or resuming Quantiles evals. If the user requests a different format, adhere to their request and do not use this format.
@@ -452,8 +471,17 @@ Summary metrics:
 Sample-level findings:
 <representative failures, errors, or patterns>
 
+Interpretation:
+<plain-English meaning calibrated to the eval and metric definitions>
+
+Practical impact:
+<debugging / regression signal / comparison signal / model-selection signal / smoke-test only>
+
 Caveats:
-<whether this was a smoke test, demo sampler run, small sample, or non-comparable comparison>
+<limits on what can be concluded>
+
+Recommended next action:
+<what to do next and why>
 
 Recommended next command:
 <qt show / qt compare / qt run command>
