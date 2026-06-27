@@ -1,11 +1,11 @@
+---
 name: quantiles
-description: Use when writing, running, inspecting, comparing, resuming, or analyzing Quantiles evaluation workflows with the qt CLI, Quantiles Python SDK, or Quantiles TypeScript SDK. Do not use for general statistics questions about quantiles or percentiles.
-
+description: Use when writing, running, inspecting, comparing, resuming, or analyzing Quantiles evaluation workflows with the qt CLI and/or Quantiles Python SDK. Do not use for general statistics questions about quantiles or percentiles.
 ---
 
 # Quantiles eval workflows
 
-Use this skill for Quantiles AI evaluation work. The `qt` CLI is the canonical entrypoint for running benchmarks and evaluations, inspecting run results, comparing runs, resuming interrupted evals, and executing custom Python or TypeScript eval workflows.
+Use this skill for Quantiles AI evaluation work. The `qt` CLI is the canonical entrypoint for running benchmarks and evaluations, inspecting run results, comparing runs, resuming interrupted evals, and executing custom Python eval workflows.
 
 Prefer `qt` CLI commands over manually reading local Quantiles storage files unless the CLI output is insufficient. Never modify local Quantiles storage files, except via `qt` CLI commands.
 
@@ -21,8 +21,8 @@ Use this skill when the user asks to:
 - Compare two Quantiles eval runs
 - Resume a failed or interrupted Quantiles eval run
 - Debug failed samples, metrics, scorers, or run outputs
-- Write a new custom eval using the Quantiles Python SDK or TypeScript SDK
-- Convert an ad-hoc Python or TypeScript eval script into a durable Quantiles eval
+- Write a new custom eval using the Quantiles Python SDK
+- Convert an ad-hoc Python script into a durable Quantiles eval
 
 ## Do not use this skill for
 
@@ -164,42 +164,17 @@ After running, report whether the run used the demo model or a real provider-bac
 
 Use this section only when the user asks to write or modify a custom Quantiles eval.
 
-Like built-in benchmarks, custom evals are run with the `qt` CLI. The `qt run` command starts a local Quantiles runtime, injects run metadata into the subprocess, records results, and tears down when done.
-
-Prefer the SDK and try to adhere to coding patterns already used by the user's repository. Before writing code, inspect the project with the below commands to determine the following:
-
-- Whether they already have Python code (`pyproject.toml`, `requirements.txt`, `uv.lock`)
-- Whether they already have TypeScript code (`package.json`, `bun.lockb`, `pnpm-lock.yaml`)
-- Whether they already use the Quantiles SDK (`quantiles`)
-- Whether they already have written some evals with Quantiles (`eval`, `benchmark`)
-
-```bash
-find . -maxdepth 3 -type f \( -name "pyproject.toml" -o -name "requirements.txt" -o -name "uv.lock" -o -name "package.json" -o -name "bun.lockb" -o -name "pnpm-lock.yaml" \)
-find . -maxdepth 4 -type f | grep -Ei 'quantiles|eval|benchmark'
-```
-
-Also consider whether the repository already has a `quantiles.toml` or `.quantiles.toml` configuration file. If so, it's possible that they are already building and running Quantiles custom code evaluations.
-
-### Choose an SDK
-
-Quantiles supports multiple ways to write evals. Prefer the SDK and pattern already used by the repository.
-
-| SDK | Best for |
-| --- | --- |
-| Python SDK ([github.com/quantiles-evals/quantiles/tree/main/python](https://github.com/quantiles-evals/quantiles/tree/main/python)) | Building lightweight, Quantiles-native evals with durable steps, emitted metrics, and local observability |
-| TypeScript SDK (at [github.com/quantiles-evals/quantiles/tree/main/typescript](https://github.com/quantiles-evals/quantiles/tree/main/typescript)) | Frontend-integrated, Node-based, or TypeScript-first evals |
-
-If the user is already using Python to build their app, and wants to build a custom Quantiles eval, advise them to use the Python SDK. If they already have a large frontend or Node codebase, advise them to use the Typescript one. Ultimately, the choice of which to use is for them to make. Do not impose a choice on them.
+Like built-in benchmarks, custom evals are run with the `qt` CLI. The `qt run` command starts a local Quantiles runtime, injects run metadata into the subprocess, records results, and tears down when done. Custom evals should be written with the Quantiles Python SDK. If the user asks how to write a custom eval, tell them about the Python SDK (see guidance below) and, if necessary, tell them it's open source on GitHub at [github.com/quantiles-evals/skill](https://github.com/quantiles-evals/python).
 
 ### Python custom eval guidance
 
-The user should use Python when:
+The Quantiles Python SDK should be imported into the user's codebase as a standard Python dependency. The best way to do this is with the with [`uv`](https://docs.astral.sh/uv/concepts/tools/) tool with the following command:
 
-- Their repository is Python-first
-- Their eval needs convenient dataset loading, scoring, model calls, or analysis in Python
-- They already have ad-hoc Python eval scripts
-- The project uses `uv` or has a `pyproject.toml` file
-- They already have custom Quantiles evals written in Python
+```bash
+uv add quantiles
+```
+
+If the user does not want to use `uv` or wants to integrate the Quantiles SDK into a repository with pre-existing Python code that already uses some other dependency management system, use the tooling they already have. Do not impose `uv` on them.
 
 A Python Quantiles eval should generally include:
 
@@ -229,34 +204,6 @@ Prior to running a custom eval, a `quantiles.toml` or `.quantiles.toml` config f
 ```bash
 qt run <eval-name> --json
 ```
-
-If the project does not use `uv`, use the project's existing Python execution command.
-
-### TypeScript custom eval guidance
-
-The user should use TypeScript when:
-
-- Their repository is TypeScript-first
-- Their eval is part of a Node, Bun, or Next.js workflow
-- They explicitly ask for TypeScript
-- They already have custom Quantiles evals written in Typescript
-
-A TypeScript Quantiles eval should generally include:
-
-- An eval name
-- Input JSON parsing
-- Durable per-sample `step()` calls
-- `emit()` calls for metrics
-- A returned JSON summary
-- `entrypoint()` registration
-
-Prior to running a custom eval, a `quantiles.toml` or `.quantiles.toml` config file is necessary, at least to set up the command that must be run for the eval. See [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details on how to do so. Once the config file is in place, run the TypeScript custom eval with:
-
-```bash
-qt run <eval-name> --json
-```
-
-If the project uses `npm`, `pnpm`, `yarn`, or `tsx` instead of Bun, use the project’s existing TypeScript execution command.
 
 ### Custom eval environment variables
 
@@ -423,6 +370,25 @@ After resuming, report:
 - Final status
 - Any remaining errors
 
+## Result interpretation and model-quality summary
+
+When summarizing a completed eval run, include both the raw result and a high-level interpretation. Keep the interpretation calibrated to the eval's stated purpose, metric definitions, sample size, and model configuration.
+
+For every completed run summary, include:
+
+- The eval name and, when inferable, what capability or behavior it is intended to measure.
+- The model name and whether it is a real provider-backed model or `demo-builtin`.
+- The primary metrics and their values, using the metric names emitted by the eval.
+- The sample count and whether the run appears to be a smoke test, partial run, or full configured run.
+- A plain-English interpretation of what the result suggests.
+- Practical impact: whether the result is useful for debugging, regression detection, comparison, model selection, or only execution validation.
+- Caveats and limits: demo model, small sample size, unclear metric semantics, benchmark limitations, non-comparable runs, or missing sample-level detail.
+- A recommended next action.
+
+Do not impose a generic meaning on metrics. First use the eval's own documentation, config, emitted metric names, and sample-level outputs to infer what the metrics mean. If metric semantics are unclear, say so and give a cautious interpretation rather than pretending the meaning is known.
+
+Never claim `demo-builtin` results measure real model quality. For demo runs, interpret only benchmark execution, metric shape, sample distribution, and storage behavior.
+
 ## Suggested reporting template
 
 Below is an example template that could be used for reporting results after running, inspecting, comparing, or resuming Quantiles evals. If the user requests a different format, adhere to their request and do not use this format.
@@ -452,8 +418,17 @@ Summary metrics:
 Sample-level findings:
 <representative failures, errors, or patterns>
 
+Interpretation:
+<plain-English meaning calibrated to the eval and metric definitions>
+
+Practical impact:
+<debugging / regression signal / comparison signal / model-selection signal / smoke-test only>
+
 Caveats:
-<whether this was a smoke test, demo sampler run, small sample, or non-comparable comparison>
+<limits on what can be concluded>
+
+Recommended next action:
+<what to do next and why>
 
 Recommended next command:
 <qt show / qt compare / qt run command>
