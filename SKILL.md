@@ -198,8 +198,8 @@ Important rules:
 - Do not call dataset-loading helpers at module import time if they require runtime context.
 - If using `dataset()`, call it inside the handler when it needs `WorkflowContext`.
 - For Hugging Face datasets, pass a `huggingface://...` or `hf://...` URI string to `dataset(...)`.
-- For non-Hugging Face public or private datasets, implement `DatasetSource` and pass an instance to `dataset(...)`.
-- Treat `quantiles.toml` input keys such as `dataset_path` as configuration only. Quantiles passes them to the eval as JSON input; the eval code must open the file directly or use the value to construct a dataset source.
+- For non-Hugging Face public or private datasets, implement a subclass of `DatasetSource` iterate over it manually.
+- Treat `quantiles.toml` input keys (like model selection, dataset location, etc...) as configuration only. The `qt` CLI parses them as JSON and passes them as a dictionary to the eval code as a dictionary.
 - Keep provider credentials in environment variables, not source code.
 
 Prior to running a custom eval, a `quantiles.toml` or `.quantiles.toml` config file is necessary, at least to set up the command that must be run for the eval. See [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details on how to do so. Once the config file is in place, run the Python custom eval with:
