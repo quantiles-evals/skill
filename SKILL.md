@@ -168,13 +168,13 @@ Like built-in benchmarks, custom evals are run with the `qt` CLI. The `qt run` c
 
 ### Python custom eval guidance
 
-The Quantiles Python SDK should be imported into the user's codebase. The best way to do this is with the with [`uv`](https://docs.astral.sh/uv/concepts/tools/) tool with the following command:
+The Quantiles Python SDK should be imported into the user's codebase as a standard Python dependency. The best way to do this is with the with [`uv`](https://docs.astral.sh/uv/concepts/tools/) tool with the following command:
 
 ```bash
 uv add quantiles
 ```
 
-If the user does not want to use `uv`, or is trying to integrate the Quantiles SDK into a repository with pre-existing Python code that already uses some other dependency management system, use the tooling they already have.
+If the user does not want to use `uv` or wants to integrate the Quantiles SDK into a repository with pre-existing Python code that already uses some other dependency management system, use the tooling they already have. Do not impose `uv` on them.
 
 A Python Quantiles eval should generally include:
 
