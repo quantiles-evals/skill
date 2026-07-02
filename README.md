@@ -2,7 +2,7 @@
 
 This repository contains reusable coding-agent instructions for running Quantiles evaluations from a repository. It is designed for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, OpenCode, and other coding agents that support reusable skills or instruction files.
 
-This skill teaches coding agents a repeatable Quantiles workflow using the `qt` CLI. It covers local initialization, benchmark and custom eval runs, sample-level inspection, run comparison, resume behavior, and regression summaries.
+This skill teaches coding agents a repeatable Quantiles workflow using the `qt` CLI. It covers local initialization, benchmark and custom eval runs, sample-level inspection, run comparison, resume behavior, and regression summaries. For a concise, public, LLM-readable overview of Quantiles with links to agent guides and related documentation, see [quantiles.io/llms.txt](https://quantiles.io/llms.txt).
 
 ## What the skill does
 
