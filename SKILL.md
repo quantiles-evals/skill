@@ -5,7 +5,7 @@ description: Use when writing, running, inspecting, comparing, resuming, or anal
 
 # Quantiles eval workflows
 
-Use this skill for Quantiles AI evaluation work. The `qt` CLI is the canonical entrypoint for running benchmarks and evaluations, inspecting run results, comparing runs, resuming interrupted evals, and executing custom Python eval workflows.
+Use this skill for Quantiles AI evaluation work. The `qt` CLI is the canonical entrypoint for running benchmarks and evaluations, configuring evaluations and benchmarks, inspecting run results, comparing runs, resuming interrupted evals, and executing custom Python eval workflows.
 
 Prefer `qt` CLI commands over manually reading local Quantiles storage files unless the CLI output is insufficient. Never modify local Quantiles storage files, except via `qt` CLI commands.
 
@@ -16,6 +16,7 @@ Always pass `--json` when using `qt run`, `qt resume`, `qt list`, `qt show`, or 
 Use this skill when the user asks to:
 
 - Run and/or configure a built-in Quantiles benchmark (e.g. `pubmedqa`, `simpleqa-verified`)
+- Run and/or configure a no-code QA benchmark with `type = "custom_nocode"`
 - Run and/or configure a custom code Quantiles evaluation
 - Inspect and analyze a Quantiles eval run
 - Compare two Quantiles eval runs
@@ -127,7 +128,7 @@ qt run <eval-name> --json
 For initial eval validation, prefer a small local smoke test:
 
 ```bash
-qt run simpleqa-verified --json --input '{"samples": 10"}'
+qt run simpleqa-verified --json --input '{"limit":10}'
 ```
 
 If the test succeeds, and the user approves running the full dataset, remove the `--input` parameter to run the complete benchmark:
@@ -140,12 +141,12 @@ The above examples use a demo model, which, as described above, just generates r
 
 ### Limiting sample count
 
-For built-in evals, pass a JSON `samples` key through `--input`.
+For built-in evals, pass a JSON `limit` key through `--input`. In `quantiles.toml`, the equivalent built-in config field is `samples`.
 
 Example:
 
 ```bash
-qt run simpleqa-verified --input '{"samples":100}' --json
+qt run simpleqa-verified --input '{"limit":100}' --json
 ```
 
 Use small limits for smoke tests and larger limits only when the user wants a more complete benchmark run.
@@ -159,6 +160,54 @@ If the user requests to use a hosted LLM provider, configure it in the `quantile
 Before running a provider-backed eval, follow the credential checks in the "Secrets and cost safety" section. For shell command examples, use the project’s documented default model when available; otherwise, use a concrete provider-prefixed model string.
 
 After running, report whether the run used the demo model or a real provider-backed model.
+
+## No-code QA benchmarks
+
+Use this section when the user asks to configure a dataset-backed QA benchmark without writing custom Python or TypeScript evaluation code.
+
+No-code QA benchmarks are configured in `quantiles.toml` or `.quantiles.toml` with `type = "custom_nocode"` and `style = "qa"`. They run inside the `qt` CLI, render each prompt with a Jinja template file, call the configured model, and score each row with exact-match accuracy against the configured golden answer column after trimming whitespace.
+
+Create a config like this from the user's project root:
+
+```toml
+[benchmarks.nocode_custom]
+type = "custom_nocode"
+style = "qa"
+dataset = "quantiles/simpleqa-verified"
+model = "random"
+prompt_template_file = "prompts/qa.txt"
+prompt_column = "problem"
+golden_column = "answer"
+limit = 10
+```
+
+Create the prompt template at the path referenced by `prompt_template_file`. The template receives a `prompt` variable from `prompt_column`:
+
+```txt
+{{ prompt }}
+```
+
+Run the benchmark with:
+
+```bash
+qt run nocode_custom --json
+```
+
+Then inspect the run:
+
+```bash
+qt show <run_id> --json
+```
+
+When configuring or reviewing a no-code QA benchmark:
+
+- Confirm `prompt_template_file` exists before running.
+- Confirm `prompt_column` and `golden_column` match columns in the dataset.
+- Use `limit` for smoke tests before running a larger sample.
+- Do not create a Python SDK eval for this path unless the user asks for custom code.
+- Treat `model = "random"` or an omitted model as a demo run, not model-quality evidence.
+- If the user provides a provider-backed model, follow the credential checks in the "Secrets and cost safety" section before running.
+- Report exact-match accuracy, `correct_count`, `total_count`, run ID, model, dataset, prompt template path, and sample count when summarizing results.
 
 ## Custom evals
 
