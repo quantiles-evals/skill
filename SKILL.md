@@ -405,7 +405,7 @@ When comparing, report the following information, if available, along with any o
 
 ## Resuming interrupted runs
 
-If an eval failed or was interrupted for any reason, resume it from where it left off instead of restarting the run from the beginning. Do so with the below command:
+If an eval failed or was interrupted for any reason, resume it from where it left off instead of restarting the run from the beginning. Do so with the following command:
 
 ```bash
 qt resume <run_id> --json
