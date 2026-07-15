@@ -19,7 +19,7 @@ This skill teaches coding agents to do the following:
 
 ## Install
 
-Install the Quantiles CLI and make this skill available to your coding agent with the following prompt:
+Make this skill available to your coding agent with the following prompt. When the skill runs, it checks whether the Quantiles CLI is installed and asks for confirmation before installing it if necessary.
 
 ```text
 Please install the Quantiles skill at github.com/quantiles-evals/skill

@@ -87,7 +87,7 @@ Use the provider prefix in `model` to decide which environment variables to chec
 - `openai:<model>` requires `OPENAI_API_KEY`
 - `anthropic:<model>` requires `ANTHROPIC_API_KEY`
 - `gemini:<model>` requires `GEMINI_API_KEY`
-- `cloudflare_ai_gateway:<model>` requires `CLOUDFLARE_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, and `CLOUDFLARE_GATEWAY_ID`
+- `cloudflare_ai_gateway:<model>` requires `CLOUDFLARE_API_KEY` and either environment variables or model-table values for the account and gateway IDs
 
 To test for the OpenAI API key, use the following:
 
@@ -107,15 +107,20 @@ To test for the Gemini API key:
 test -n "$GEMINI_API_KEY" && echo "GEMINI_API_KEY is set"
 ```
 
-To test the Cloudflare AI Gateway credentials without printing their values:
+For Cloudflare AI Gateway, always check the API key without printing its value:
 
 ```bash
 test -n "$CLOUDFLARE_API_KEY" && echo "CLOUDFLARE_API_KEY is set"
+```
+
+Inspect the model configuration before checking the account and gateway environment variables. If the model table does not provide `account_id` and `gateway_id`, check for them in the environment:
+
+```bash
 test -n "$CLOUDFLARE_ACCOUNT_ID" && echo "CLOUDFLARE_ACCOUNT_ID is set"
 test -n "$CLOUDFLARE_GATEWAY_ID" && echo "CLOUDFLARE_GATEWAY_ID is set"
 ```
 
-For a Cloudflare AI Gateway model table, `account_id` and `gateway_id` can be supplied directly in `quantiles.toml` instead of through environment variables. In either case, `CLOUDFLARE_API_KEY` must still be set in the environment.
+For a Cloudflare AI Gateway model table, `account_id` and `gateway_id` can be supplied directly in `quantiles.toml` instead of through environment variables. In either case, `CLOUDFLARE_API_KEY` must be set in the environment.
 
 If the required environment variable is missing, stop before running the provider-backed eval and report which is missing. If the selected provider uses a different key, use the provider-specific environment variable required by that model or SDK.
 
@@ -178,6 +183,8 @@ Use this section when the user asks to configure a dataset-backed exact-match or
 
 Custom no-code evaluations are configured in `quantiles.toml` or `.quantiles.toml` with `type = "custom_nocode"` and a style table whose type is `"exact_match"` or `"multiple_choice"`. They run inside the `qt` CLI, render each prompt with a Jinja template, call the configured model, and score the response using the configured style.
 
+Custom no-code evaluations currently load Hugging Face datasets. The `dataset` table requires `name` and optionally accepts `config_name`, `split`, and `revision`.
+
 For exact-match scoring, configure the expected-answer field inside `style`:
 
 ```toml
@@ -225,12 +232,12 @@ A multiple-choice template receives normalized `choices` in addition to `row`:
 {% endfor %}
 ```
 
-Choices can come from one array or label-keyed object field through `style.choices.column`, or from multiple scalar fields through `style.choices.columns`. The answer source must use exactly one of `label_column`, `index_column`, or `correct_choice_column`. Choice labels must be nonempty and unique; when using `style.choices.columns`, the columns and labels must have equal lengths. `correct_choice_column` requires `style.choices.columns` and must name one of those columns.
+Choices can come from one array or label-keyed object field through `style.choices.column`, or from multiple scalar fields through `style.choices.columns`. Array-backed rows may contain fewer choices than the configured labels, but not more. The answer source must use exactly one of `label_column`, `index_column`, or `correct_choice_column`; `index_column` uses a zero-based index unless `style.answer.index_base` is configured. Choice labels must be nonempty and unique; when using `style.choices.columns`, the columns and labels must have equal lengths. `correct_choice_column` requires `style.choices.columns` and must name one of those columns. To shuffle choices deterministically, configure `style.shuffle.seed_column` with a stable scalar field from each row.
 
 Run the benchmark with:
 
 ```bash
-qt run nocode_custom --json
+qt run <eval-name> --json
 ```
 
 Then inspect the run:
@@ -254,9 +261,7 @@ When configuring or reviewing a custom no-code evaluation:
 
 ## Custom code evals
 
-Use this section only when the user asks to write or modify a custom code Quantiles eval. These evals are written with Python with the [Quantiles Python SDK](https://quantiles.io/documentation/reference/python-sdk).
-
-Like built-in benchmarks, custom evals are run with the `qt` CLI. The `qt run` command starts a local Quantiles runtime, injects run metadata into the subprocess, records results, and tears down when done. Custom evals should be written with the Quantiles Python SDK. If the user asks how to write a custom code eval, tell them about the Python SDK (see guidance below) and, if necessary, tell them it's open source on GitHub in the Quantiles monorepo at [github.com/quantiles-evals/quantiles/tree/main/python](https://github.com/quantiles-evals/quantiles/tree/main/python).
+Use this section only when the user asks to write or modify a custom code Quantiles eval. Write these evals with the [Quantiles Python SDK](https://quantiles.io/documentation/reference/python-sdk), which is open source in the Quantiles monorepo at [github.com/quantiles-evals/quantiles/tree/main/python](https://github.com/quantiles-evals/quantiles/tree/main/python). Custom code evals are configured with `type = "custom_code"` in the configuration file, and should be run with the standard `qt run <eval_name>` command. When a custom code eval is run, the `qt` CLI starts the local Quantiles runtime, starts a sub-process that executes the command specified in the `command` field, injects run metadata into the subprocess, records results, and shuts down the runtime when finished.
 
 ### Python custom eval guidance
 
@@ -283,7 +288,7 @@ Important rules:
 
 - Eval names must be stable and unique within the file.
 - `entrypoint()` uses `QUANTILES_WORKFLOW_NAME` from the CLI.
-- A completed `step()` is reused only when both its stable `step_key` parameter and, when it's provided, the hash of its `input_value` parameter matches. Reusing a step key with different input is rejected.
+- A completed `step()` is reused only when both its stable `step_key` and the hash of its `input_value` match. The input is hashed even when its value is `None`, and reusing a step key with different input is rejected.
 - Use deterministic step keys, usually based on sample IDs, and include every behavior-changing value in `input_value` so the input hash captures all cache-invalidating state.
 - `emit()` writes metrics to the local Quantiles run store so they appear in `qt show` and `qt compare`.
 - Do not call dataset-loading helpers at module import time if they require runtime context.
@@ -306,7 +311,7 @@ When `qt run` executes a custom eval command (specified in the config file), Qua
 Common environment variables include:
 
 - `QUANTILES_BASE_URL` — local server URL, often `http://127.0.0.1:8765`
-- `QUANTILES_RUN_ID` — existing run ID, if resuming
+- `QUANTILES_RUN_ID` — run ID created by `qt run` or reused by `qt resume`
 - `QUANTILES_WORKFLOW_NAME` — eval name passed to `qt run`
 - `QUANTILES_INPUT` — merged JSON input from the benchmark's `input` table and any `--input` overrides
 
@@ -567,15 +572,15 @@ Model configuration can be found in the `quantiles.toml`/`.quantiles.toml` confi
 
 ### JSON parsing fails
 
-Confirm `--json` was passed to the command:
+Most `qt` commands have a `--json` flag, including `qt run`, `qt show`, and `qt list`. Prefer to pass the `--json` flag to these and more commands, so that the output can be easily parsed. If you do not pass `--json`, the command will emit human-readable output instead.
 
-Correct:
+For example, this command emits machine-readable output:
 
 ```bash
 qt run my-eval --json
 ```
 
-Incorrect:
+While the same command without the `--json` flag emits human-readable output that will not parse as JSON:
 
 ```bash
 qt run my-eval
