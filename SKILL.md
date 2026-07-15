@@ -161,11 +161,11 @@ Before running a provider-backed eval, follow the credential checks in the "Secr
 
 After running, report whether the run used the demo model or a real provider-backed model.
 
-## No-code QA benchmarks
+## Custom no-code evaluations
 
 Use this section when the user asks to configure a dataset-backed QA benchmark without writing custom Python or TypeScript evaluation code.
 
-No-code QA benchmarks are configured in `quantiles.toml` or `.quantiles.toml` with `type = "custom_nocode"` and `style = "qa"`. They run inside the `qt` CLI, render each prompt with a Jinja template file, call the configured model, and score each row with exact-match accuracy against the configured golden answer column after trimming whitespace.
+Custom no-code evaluations are configured in `quantiles.toml` or `.quantiles.toml` with `type = "custom_nocode"` and `style = "qa"`. They run inside the `qt` CLI, render each prompt with a Jinja template file, call the configured model, and score each row with exact-match accuracy against the configured golden answer column after trimming whitespace.
 
 Create a config like this from the user's project root:
 
@@ -199,7 +199,7 @@ Then inspect the run:
 qt show <run_id> --json
 ```
 
-When configuring or reviewing a no-code QA benchmark:
+When configuring or reviewing a custom no-code evaluations:
 
 - Confirm `prompt_template_file` exists before running.
 - Confirm `prompt_column` and `golden_column` match columns in the dataset.

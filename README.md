@@ -10,7 +10,7 @@ This skill teaches coding agents to do the following:
 
 - Run evaluations through `qt`.
 - Preserve run IDs, commands, inputs, metrics, stdout, stderr, and failure context.
-- Use `qt run <benchmark>` to run built-in benchmarks, no-code QA benchmarks, and custom eval workflows.
+- Use `qt run <benchmark>` to run built-in benchmarks, custom no-code evaluations, and custom code evaluation workflows.
 - Use `qt show <run_id>` to inspect run results.
 - Use `qt compare <run_id_a> <run_id_b>` to analyze changes between runs.
 - Use `--json` to inspect structured result outputs.
