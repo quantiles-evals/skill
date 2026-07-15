@@ -572,7 +572,7 @@ Model configuration can be found in the `quantiles.toml`/`.quantiles.toml` confi
 
 ### JSON parsing fails
 
-Most `qt` commands have a `--json` flag, including `qt run`, `qt show`, and `qt list`. Prefer to pass the `--json` flag to these and more commands, so that the output can be easily parsed. If you do not pass `--json`, the command will emit human-readable output instead.
+Most `qt` commands have a `--json` flag, including `qt run`, `qt show`, and `qt list`. Make sure to pass the `--json` flag to these and more commands, so that the output can be easily parsed (e.g. by the `jq` tool, if it's present on the user's machine). If you do not pass `--json`, the command will emit human-readable output instead.
 
 For example, this command emits machine-readable output:
 
