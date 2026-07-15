@@ -55,7 +55,7 @@ Follow these rules for all Quantiles work:
 Before running Quantiles commands, check whether `qt` is installed:
 
 ```bash
-qt --version
+qt --help
 ```
 
 If `qt` is missing, tell the user it's missing, and confirm that they want to proceed with installation. After they confirm, install it with the following command:
@@ -67,7 +67,7 @@ curl -fsSL https://cli.quantiles.io/install.sh | bash
 After installation, verify that `qt` is available:
 
 ```bash
-qt --version
+qt --help
 ```
 
 If the repository has not been initialized and the user asked to run or create Quantiles evals, initialize it:
@@ -552,7 +552,7 @@ curl -fsSL https://cli.quantiles.io/install.sh | bash
 Then verify:
 
 ```bash
-command -v qt && qt --version
+command -v qt && qt --help
 ```
 
 ### Built-in eval ran but results look random
