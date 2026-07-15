@@ -16,7 +16,7 @@ Always pass `--json` when using `qt run`, `qt resume`, `qt list`, `qt show`, or 
 Use this skill when the user asks to:
 
 - Run and/or configure a built-in Quantiles benchmark (e.g. `pubmedqa`, `simpleqa-verified`)
-- Run and/or configure a no-code QA benchmark with `type = "custom_nocode"`
+- Run and/or configure an exact-match or multiple-choice evaluation with `type = "custom_nocode"`
 - Run and/or configure a custom code Quantiles evaluation
 - Inspect and analyze a Quantiles eval run
 - Compare two Quantiles eval runs
@@ -163,29 +163,58 @@ After running, report whether the run used the demo model or a real provider-bac
 
 ## Custom no-code evaluations
 
-Use this section when the user asks to configure a dataset-backed QA benchmark without writing custom Python or TypeScript evaluation code.
+Use this section when the user asks to configure a dataset-backed exact-match or multiple-choice evaluation without writing custom evaluation code.
 
-Custom no-code evaluations are configured in `quantiles.toml` or `.quantiles.toml` with `type = "custom_nocode"` and `style = "qa"`. They run inside the `qt` CLI, render each prompt with a Jinja template file, call the configured model, and score each row with exact-match accuracy against the configured golden answer column after trimming whitespace.
+Custom no-code evaluations are configured in `quantiles.toml` or `.quantiles.toml` with `type = "custom_nocode"` and a style table whose type is `"exact_match"` or `"multiple_choice"`. They run inside the `qt` CLI, render each prompt with a Jinja template, call the configured model, and score the response using the configured style.
 
-Create a config like this from the user's project root:
+For exact-match scoring, configure the expected-answer field inside `style`:
 
 ```toml
 [benchmarks.nocode_custom]
 type = "custom_nocode"
-style = "qa"
-dataset = "quantiles/simpleqa-verified"
+style = { type = "exact_match", golden_column = "answer" }
+dataset = { name = "quantiles/simpleqa-verified" }
 model = "random"
 prompt_template_file = "prompts/qa.txt"
-prompt_column = "problem"
-golden_column = "answer"
 limit = 10
 ```
 
-Create the prompt template at the path referenced by `prompt_template_file`. The template receives a `prompt` variable from `prompt_column`:
+The prompt template receives the complete dataset row as `row`. The contents of `row` vary by dataset, but below is an example:
 
-```txt
-{{ prompt }}
+```jinja
+{{ row.problem }}
 ```
+
+Exact-match scoring converts a scalar golden value to text, trims leading and trailing whitespace from both values, and otherwise compares the model response case-sensitively.
+
+For multiple-choice scoring, configure the choices, answer source, and unique choice labels inside `style`:
+
+```toml
+[benchmarks.medqa]
+type = "custom_nocode"
+dataset = { name = "quantiles/MedQA-USMLE-4-options", config_name = "default", split = "test" }
+model = "random"
+prompt_template_file = "prompts/medqa.txt"
+limit = 10
+
+[benchmarks.medqa.style]
+type = "multiple_choice"
+choices = { column = "options" }
+choice_labels = ["A", "B", "C", "D"]
+answer = { label_column = "answer_idx" }
+```
+
+A multiple-choice template receives normalized `choices` in addition to `row`:
+
+```jinja
+{{ row.question }}
+
+{% for choice in choices %}
+{{ choice.label }}. {{ choice.text }}
+{% endfor %}
+```
+
+Choices can come from one array or label-keyed object field through `style.choices.column`, or from multiple scalar fields through `style.choices.columns`. The answer source must use exactly one of `label_column`, `index_column`, or `correct_choice_column`. Choice labels must be nonempty and unique; when using `style.choices.columns`, the columns and labels must have equal lengths. `correct_choice_column` requires `style.choices.columns` and must name one of those columns.
 
 Run the benchmark with:
 
@@ -199,21 +228,24 @@ Then inspect the run:
 qt show <run_id> --json
 ```
 
-When configuring or reviewing a custom no-code evaluations:
+When configuring or reviewing a custom no-code evaluation:
 
-- Confirm `prompt_template_file` exists before running.
-- Confirm `prompt_column` and `golden_column` match columns in the dataset.
+- Confirm `prompt_template_file` exists and contains valid Jinja before running.
+- Confirm the template's `row` fields and all style-specific fields exist in the dataset.
+- For exact-match evaluations, confirm `style.golden_column` identifies the expected response.
+- For multiple-choice evaluations, confirm the choice source, answer source, labels, and optional deterministic shuffle configuration match the dataset shape.
 - Use `limit` for smoke tests before running a larger sample.
 - Do not create a Python SDK eval for this path unless the user asks for custom code.
 - Treat `model = "random"` or an omitted model as a demo run, not model-quality evidence.
 - If the user provides a provider-backed model, follow the credential checks in the "Secrets and cost safety" section before running.
-- Report exact-match accuracy, `correct_count`, `total_count`, run ID, model, dataset, prompt template path, and sample count when summarizing results.
+- Report the run ID, model, dataset, prompt template path, sample count, accuracy, correctness counts, parse-rate metrics, and latency metrics when summarizing results.
+- For multiple-choice evaluations, also report the relevant macro, weighted, per-label, support, and confusion-matrix metrics.
 
-## Custom evals
+## Custom code evals
 
-Use this section only when the user asks to write or modify a custom Quantiles eval.
+Use this section only when the user asks to write or modify a custom code Quantiles eval. These evals are written with Python
 
-Like built-in benchmarks, custom evals are run with the `qt` CLI. The `qt run` command starts a local Quantiles runtime, injects run metadata into the subprocess, records results, and tears down when done. Custom evals should be written with the Quantiles Python SDK. If the user asks how to write a custom eval, tell them about the Python SDK (see guidance below) and, if necessary, tell them it's open source on GitHub at [github.com/quantiles-evals/skill](https://github.com/quantiles-evals/python).
+Like built-in benchmarks, custom evals are run with the `qt` CLI. The `qt run` command starts a local Quantiles runtime, injects run metadata into the subprocess, records results, and tears down when done. Custom evals should be written with the Quantiles Python SDK. If the user asks how to write a custom code eval, tell them about the Python SDK (see guidance below) and, if necessary, tell them it's open source on GitHub in the Quantiles monorepo at [github.com/quantiles-evals/quantiles/tree/main/python](https://github.com/quantiles-evals/quantiles/tree/main/python).
 
 ### Python custom eval guidance
 
@@ -247,8 +279,8 @@ Important rules:
 - Do not call dataset-loading helpers at module import time if they require runtime context.
 - If using `dataset()`, call it inside the handler when it needs `WorkflowContext`.
 - For Hugging Face datasets, pass a `huggingface://...` or `hf://...` URI string to `dataset(...)`.
-- For non-Hugging Face public or private datasets, implement a subclass of `DatasetSource` iterate over it manually.
-- Treat `quantiles.toml` input keys (like model selection, dataset location, etc...) as configuration only. The `qt` CLI parses them as JSON and passes them as a dictionary to the eval code as a dictionary.
+- The public `dataset()` helper currently supports Hugging Face sources only and does not accept a custom `DatasetSource`. For other public or private datasets, load and iterate the data manually inside the workflow.
+- For custom code evaluations, the CLI merges the benchmark's `input` table with a JSON object supplied through `--input`. CLI values override matching configuration keys, and the merged object is serialized as JSON in `QUANTILES_INPUT`.
 - Keep provider credentials in environment variables, not source code.
 
 Prior to running a custom eval, a `quantiles.toml` or `.quantiles.toml` config file is necessary, at least to set up the command that must be run for the eval. See [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details on how to do so. Once the config file is in place, run the Python custom eval with:
@@ -266,7 +298,7 @@ Common environment variables include:
 - `QUANTILES_BASE_URL` — local server URL, often `http://127.0.0.1:8765`
 - `QUANTILES_RUN_ID` — existing run ID, if resuming
 - `QUANTILES_WORKFLOW_NAME` — eval name passed to `qt run`
-- `QUANTILES_INPUT` — JSON input from `--input`
+- `QUANTILES_INPUT` — merged JSON input from the benchmark's `input` table and any `--input` overrides
 
 The SDKs discussed above should automatically detect and handle these variables.
 
