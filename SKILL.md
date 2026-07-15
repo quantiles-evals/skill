@@ -82,11 +82,12 @@ Do not run `qt init` repeatedly without checking whether the repository is alrea
 
 Only run a provider-backed eval (e.g. an eval that uses a hosted LLM provider, like OpenAI or Anthropic) when the user asks for a real model run or provides a model name. Never print API key values. Check whether the required credential is present without revealing it.
 
-Use the provider prefix in `model` to decide which key to check:
+Use the provider prefix in `model` to decide which environment variables to check:
 
 - `openai:<model>` requires `OPENAI_API_KEY`
 - `anthropic:<model>` requires `ANTHROPIC_API_KEY`
 - `gemini:<model>` requires `GEMINI_API_KEY`
+- `cloudflare_ai_gateway:<model>` requires `CLOUDFLARE_API_KEY`, `CLOUDFLARE_ACCOUNT_ID`, and `CLOUDFLARE_GATEWAY_ID`
 
 To test for the OpenAI API key, use the following:
 
@@ -105,6 +106,16 @@ To test for the Gemini API key:
 ```bash
 test -n "$GEMINI_API_KEY" && echo "GEMINI_API_KEY is set"
 ```
+
+To test the Cloudflare AI Gateway credentials without printing their values:
+
+```bash
+test -n "$CLOUDFLARE_API_KEY" && echo "CLOUDFLARE_API_KEY is set"
+test -n "$CLOUDFLARE_ACCOUNT_ID" && echo "CLOUDFLARE_ACCOUNT_ID is set"
+test -n "$CLOUDFLARE_GATEWAY_ID" && echo "CLOUDFLARE_GATEWAY_ID is set"
+```
+
+For a Cloudflare AI Gateway model table, `account_id` and `gateway_id` can be supplied directly in `quantiles.toml` instead of through environment variables. In either case, `CLOUDFLARE_API_KEY` must still be set in the environment.
 
 If the required environment variable is missing, stop before running the provider-backed eval and report which is missing. If the selected provider uses a different key, use the provider-specific environment variable required by that model or SDK.
 
@@ -243,13 +254,13 @@ When configuring or reviewing a custom no-code evaluation:
 
 ## Custom code evals
 
-Use this section only when the user asks to write or modify a custom code Quantiles eval. These evals are written with Python
+Use this section only when the user asks to write or modify a custom code Quantiles eval. These evals are written with Python with the [Quantiles Python SDK](https://quantiles.io/documentation/reference/python-sdk).
 
 Like built-in benchmarks, custom evals are run with the `qt` CLI. The `qt run` command starts a local Quantiles runtime, injects run metadata into the subprocess, records results, and tears down when done. Custom evals should be written with the Quantiles Python SDK. If the user asks how to write a custom code eval, tell them about the Python SDK (see guidance below) and, if necessary, tell them it's open source on GitHub in the Quantiles monorepo at [github.com/quantiles-evals/quantiles/tree/main/python](https://github.com/quantiles-evals/quantiles/tree/main/python).
 
 ### Python custom eval guidance
 
-The Quantiles Python SDK should be imported into the user's codebase as a standard Python dependency. The best way to do this is with the with [`uv`](https://docs.astral.sh/uv/concepts/tools/) tool with the following command:
+The Quantiles Python SDK should be imported into the user's codebase as a standard Python dependency. The best way to do this is with the [`uv`](https://docs.astral.sh/uv/concepts/tools/) tool using the following command:
 
 ```bash
 uv add quantiles
@@ -259,7 +270,7 @@ If the user does not want to use `uv` or wants to integrate the Quantiles SDK in
 
 A Python Quantiles eval should generally include:
 
-- An eval name (called `workflow` in the SDK) name
+- An eval name, called a `workflow` in the SDK
 - An async handler
 - Input JSON parsing
 - Deterministic sample IDs
@@ -270,11 +281,10 @@ A Python Quantiles eval should generally include:
 
 Important rules:
 
-- eval names must be stable and unique within the file.
+- Eval names must be stable and unique within the file.
 - `entrypoint()` uses `QUANTILES_WORKFLOW_NAME` from the CLI.
-- `step()` caches by `step_key`.
-- Use deterministic step keys, usually based on sample IDs.
-- Include all cache-invalidating values in step inputs.
+- A completed `step()` is reused only when both its stable `step_key` parameter and, when it's provided, the hash of its `input_value` parameter matches. Reusing a step key with different input is rejected.
+- Use deterministic step keys, usually based on sample IDs, and include every behavior-changing value in `input_value` so the input hash captures all cache-invalidating state.
 - `emit()` writes metrics to the local Quantiles run store so they appear in `qt show` and `qt compare`.
 - Do not call dataset-loading helpers at module import time if they require runtime context.
 - If using `dataset()`, call it inside the handler when it needs `WorkflowContext`.
@@ -331,7 +341,7 @@ Always pass `--json` to the following commands:
 - `qt show <run_id> --json`
 - `qt compare <run_id_1> <run_id_2> --json`
 
-`qt run` returns structured data that includes the `run_id` and eval name. Inspect the output to extract the information and analyses the user requests.
+`qt run` returns structured data that includes the `run_id` and eval name. Inspect the output to extract the requested information and perform the requested analysis.
 
 Use the returned `run_id` to inspect the run later:
 
@@ -357,7 +367,7 @@ qt show <run_id> --json
 
 If you do not have a `run_id`, use `qt list --json` to get a complete JSON list of all runs, then find the `run_id` in the list.
 
-`qt show` returns structured information about the run, including the `run_id` and eval name. Inspect the output to extract the information and analyses the user requests. When the user asks what happened in a run, inspect both aggregate metrics and sample-level results.
+`qt show` returns structured information about the run, including the `run_id` and eval name. Inspect the output to extract the requested information and perform the requested analysis. When the user asks what happened in a run, inspect both aggregate metrics and sample-level results.
 
 ### Sample-level analysis
 

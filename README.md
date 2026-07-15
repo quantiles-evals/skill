@@ -27,10 +27,10 @@ Please install the Quantiles skill at github.com/quantiles-evals/skill
 
 Alternatively, copy this repository's [`SKILL.md`](./SKILL.md) to the location on disk your coding agent expects to find skills.
 
-After your agent completes the install, have it run its first benchmark using the following prompt
+After your agent completes the install, have it run its first benchmark using the following prompt:
 
 ```text
 Use the Quantiles skill to run the SimpleQA Verified benchmark and summarize the results.
 ```
 
->Note: this prompt uses a demo model which generates random text and does not use any hosted LLM provider and does not incur any inference cost.
+> Note: This prompt uses a demo model that generates random text. It does not call a hosted LLM provider or incur inference costs.
