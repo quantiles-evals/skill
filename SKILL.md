@@ -171,7 +171,7 @@ For provider-backed model runs, use a small limit first unless the user explicit
 
 ### Customizing the model
 
-If the user asks to use a hosted LLM provider, configure it in the `quantiles.toml` configuration file. See [`github.com/quantiles-evals/quantiles/blob/main/CONFIG.md`](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details.
+If the user asks to use a hosted LLM provider, configure it in the `quantiles.toml` configuration file. See the [Quantiles configuration documentation](https://quantiles.io/documentation/configuration) for details.
 
 Before running a provider-backed evaluation, follow the credential checks in the "Secrets and cost safety" section. For shell command examples, use the project’s documented default model when available; otherwise, use a concrete provider-prefixed model string.
 
@@ -300,7 +300,7 @@ Important rules:
 - For custom code evaluations, the CLI merges the benchmark's `input` table with a JSON object supplied through `--input`. CLI values override matching configuration keys, and the merged object is serialized as JSON in `QUANTILES_INPUT`.
 - Keep provider credentials in environment variables, not source code.
 
-Before running a custom evaluation, create a `quantiles.toml` or `.quantiles.toml` configuration file. See [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details. Once the configuration file is in place, run the Python custom evaluation with:
+Before running a custom evaluation, create a `quantiles.toml` or `.quantiles.toml` configuration file. See the [Quantiles configuration documentation](https://quantiles.io/documentation/configuration) for details. Once the configuration file is in place, run the Python custom evaluation with:
 
 ```bash
 qt run <eval-name> --json
@@ -570,7 +570,7 @@ Check whether the run used the demo model. Demo model output is expected to be r
 
 Check the relevant provider environment variable from the "Secrets and cost safety" section, then verify that the `model` input key uses the correct provider prefix.
 
-Model configuration belongs in a `quantiles.toml` or `.quantiles.toml` configuration file. Read [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for more details.
+Model configuration belongs in a `quantiles.toml` or `.quantiles.toml` configuration file. Read the [Quantiles configuration documentation](https://quantiles.io/documentation/configuration) for more details.
 
 ### JSON parsing fails
 
