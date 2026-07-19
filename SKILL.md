@@ -5,7 +5,7 @@ description: Use when writing, running, inspecting, comparing, resuming, or anal
 
 # Quantiles eval workflows
 
-Use this skill for Quantiles AI evaluation work. The `qt` CLI is the canonical entrypoint for running benchmarks and evaluations, configuring evaluations and benchmarks, inspecting run results, comparing runs, resuming interrupted evals, and executing custom Python eval workflows.
+Use this skill for Quantiles AI evaluation work. The `qt` CLI is the canonical entrypoint for running benchmarks and evaluations, configuring evaluations and benchmarks, inspecting run results, comparing runs, resuming interrupted evaluations, and executing custom Python evaluation workflows.
 
 Prefer `qt` CLI commands over manually reading local Quantiles storage files unless the CLI output is insufficient. Never modify local Quantiles storage files, except via `qt` CLI commands.
 
@@ -15,22 +15,22 @@ Always pass `--json` when using `qt run`, `qt resume`, `qt list`, `qt show`, or 
 
 Use this skill when the user asks to:
 
-- Run and/or configure a built-in Quantiles benchmark (e.g. `pubmedqa`, `simpleqa-verified`)
+- Run and/or configure a built-in Quantiles benchmark (e.g., `pubmedqa`, `simpleqa-verified`)
 - Run and/or configure an exact-match or multiple-choice evaluation with `type = "custom_nocode"`
-- Run and/or configure a custom code Quantiles evaluation
-- Inspect and analyze a Quantiles eval run
-- Compare two Quantiles eval runs
-- Resume a failed or interrupted Quantiles eval run
+- Run and/or configure a Quantiles custom-code evaluation
+- Inspect and analyze a Quantiles evaluation run
+- Compare two Quantiles evaluation runs
+- Resume a failed or interrupted Quantiles evaluation run
 - Debug failed samples, metrics, scorers, or run outputs
-- Write a new custom eval using the Quantiles Python SDK
-- Convert an ad-hoc Python script into a durable Quantiles eval
+- Write a new custom evaluation using the Quantiles Python SDK
+- Convert an ad-hoc Python script into a durable Quantiles evaluation
 
 ## Do not use this skill for
 
 Do not use this skill for:
 
-- General statistics questions about quantiles, percentiles, medians, or distributions, that are unrelated to benchmarks or evals run via the `qt` CLI.
-- Non-Quantiles eval frameworks unless the user asks to convert them into Quantiles evals.
+- General statistics questions about quantiles, percentiles, medians, or distributions that are unrelated to benchmarks or evaluations run via the `qt` CLI.
+- Non-Quantiles evaluation frameworks unless the user asks to convert them into Quantiles evaluations.
 - Reporting demo model runs as valid model-quality benchmark results.
 - Manually editing Quantiles run storage.
 
@@ -44,9 +44,9 @@ Follow these rules for all Quantiles work:
 4. Report the exact command used.
 5. Report the `run_id` after every successful run.
 6. Do not claim a demo model run measures real model quality.
-7. Do not run external provider-backed evals unless the user asked for a real model run or provided a model name.
+7. Do not run external provider-backed evaluations unless the user asked for a real model run or provided a model name.
 8. For external model runs, verify the required provider API key is configured without printing the key value.
-9. For small sample counts (i.e. the number of samples in the run is a small fraction of the total samples in the benchmark or eval), warn the user to be cautious in interpreting the results given the small sample size.
+9. For small sample counts (i.e., when the number of samples in the run is a small fraction of the total samples in the benchmark or evaluation), warn the user to be cautious when interpreting the results given the small sample size.
 10. Before saying one run is better than another, check whether the runs are comparable.
 11. Never print, log, or expose API key values.
 
@@ -58,7 +58,7 @@ Before running Quantiles commands, check whether `qt` is installed:
 qt --help
 ```
 
-If `qt` is missing, tell the user it's missing, and confirm that they want to proceed with installation. After they confirm, install it with the following command:
+If `qt` is missing, tell the user it's missing and confirm that they want to proceed with installation. After they confirm, install it with the following command:
 
 ```bash
 curl -fsSL https://cli.quantiles.io/install.sh | bash
@@ -70,7 +70,7 @@ After installation, verify that `qt` is available:
 qt --help
 ```
 
-If the repository has not been initialized and the user asked to run or create Quantiles evals, initialize it:
+If the repository has not been initialized and the user asked to run or create Quantiles evaluations, initialize it:
 
 ```bash
 qt init
@@ -80,7 +80,7 @@ Do not run `qt init` repeatedly without checking whether the repository is alrea
 
 ## Secrets and cost safety
 
-Only run a provider-backed eval (e.g. an eval that uses a hosted LLM provider, like OpenAI or Anthropic) when the user asks for a real model run or provides a model name. Never print API key values. Check whether the required credential is present without revealing it.
+Only run a provider-backed evaluation (e.g., an evaluation that uses a hosted LLM provider, such as OpenAI or Anthropic) when the user asks for a real model run or provides a model name. Never print API key values. Check whether the required credential is present without revealing it.
 
 Use the provider prefix in `model` to decide which environment variables to check:
 
@@ -122,32 +122,32 @@ test -n "$CLOUDFLARE_GATEWAY_ID" && echo "CLOUDFLARE_GATEWAY_ID is set"
 
 For a Cloudflare AI Gateway model table, `account_id` and `gateway_id` can be supplied directly in `quantiles.toml` instead of through environment variables. In either case, `CLOUDFLARE_API_KEY` must be set in the environment.
 
-If the required environment variable is missing, stop before running the provider-backed eval and report which is missing. If the selected provider uses a different key, use the provider-specific environment variable required by that model or SDK.
+If the required environment variable is missing, stop before running the provider-backed evaluation and report which is missing. If the selected provider uses a different key, use the provider-specific environment variable required by that model or SDK.
 
 If the user asks for an evaluation run with a hosted model, but does not specify a sample count, start with a small smoke-test limit unless the user explicitly asks for a larger run.
 
-## Running built-in benchmarks
+## Running built-in evaluations
 
-The `qt` CLI includes built-in evals such as:
+The `qt` CLI includes built-in evaluations such as:
 
 | Eval                | Purpose                                                                     |
 | ------------------- | --------------------------------------------------------------------------- |
 | `pubmedqa`          | Evaluates model performance on standard healthcare knowledge questions      |
 | `simpleqa-verified` | Evaluates general factual knowledge using an updated SimpleQA-style dataset |
 
-Run a built-in eval with:
+Run a built-in evaluation with:
 
 ```bash
 qt run <eval-name> --json
 ```
 
-For initial eval validation, prefer a small local smoke test:
+For initial evaluation validation, prefer a small local smoke test:
 
 ```bash
 qt run simpleqa-verified --json --input '{"limit":10}'
 ```
 
-If the test succeeds, and the user approves running the full dataset, remove the `--input` parameter to run the complete benchmark:
+If the test succeeds and the user approves running the full dataset, remove the `--input` parameter to run the complete benchmark:
 
 ```bash
 qt run simpleqa-verified --json
@@ -157,7 +157,7 @@ The above examples use a demo model, which, as described above, just generates r
 
 ### Limiting sample count
 
-For built-in evals, pass a JSON `limit` key through `--input`. In `quantiles.toml`, the equivalent built-in config field is `samples`.
+For built-in evaluations, pass a JSON `limit` key through `--input`. In `quantiles.toml`, the equivalent built-in config field is `samples`.
 
 Example:
 
@@ -171,9 +171,9 @@ For provider-backed model runs, use a small limit first unless the user explicit
 
 ### Customizing the model
 
-If the user requests to use a hosted LLM provider, configure it in the `quantiles.toml` config file. See [`github.com/quantiles-evals/quantiles/blob/main/CONFIG.md`](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details.
+If the user asks to use a hosted LLM provider, configure it in the `quantiles.toml` configuration file. See [`github.com/quantiles-evals/quantiles/blob/main/CONFIG.md`](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details.
 
-Before running a provider-backed eval, follow the credential checks in the "Secrets and cost safety" section. For shell command examples, use the project’s documented default model when available; otherwise, use a concrete provider-prefixed model string.
+Before running a provider-backed evaluation, follow the credential checks in the "Secrets and cost safety" section. For shell command examples, use the project’s documented default model when available; otherwise, use a concrete provider-prefixed model string.
 
 After running, report whether the run used the demo model or a real provider-backed model.
 
@@ -253,15 +253,17 @@ When configuring or reviewing a custom no-code evaluation:
 - For exact-match evaluations, confirm `style.golden_column` identifies the expected response.
 - For multiple-choice evaluations, confirm the choice source, answer source, labels, and optional deterministic shuffle configuration match the dataset shape.
 - Use `limit` for smoke tests before running a larger sample.
-- Do not create a Python SDK eval for this path unless the user asks for custom code.
+- Do not create a Python SDK evaluation for this path unless the user asks for custom code.
 - Treat `model = "random"` or an omitted model as a demo run, not model-quality evidence.
 - If the user provides a provider-backed model, follow the credential checks in the "Secrets and cost safety" section before running.
 - Report the run ID, model, dataset, prompt template path, sample count, accuracy, correctness counts, parse-rate metrics, and latency metrics when summarizing results.
 - For multiple-choice evaluations, also report the relevant macro, weighted, per-label, support, and confusion-matrix metrics.
 
-## Custom code evals
+For more information, see the [custom no-code documentation](https://quantiles.io/documentation/custom-evaluations/custom-nocode-evaluations).
 
-Use this section only when the user asks to write or modify a custom code Quantiles eval. Write these evals with the [Quantiles Python SDK](https://quantiles.io/documentation/reference/python-sdk), which is open source in the Quantiles monorepo at [github.com/quantiles-evals/quantiles/tree/main/python](https://github.com/quantiles-evals/quantiles/tree/main/python). Custom code evals are configured with `type = "custom_code"` in the configuration file, and should be run with the standard `qt run <eval_name>` command. When a custom code eval is run, the `qt` CLI starts the local Quantiles runtime, starts a sub-process that executes the command specified in the `command` field, injects run metadata into the subprocess, records results, and shuts down the runtime when finished.
+## Custom code evaluations
+
+Use this section only when the user asks to write or modify a Quantiles custom-code evaluation. Write these evaluations with the [Quantiles Python SDK](https://quantiles.io/documentation/reference/python-sdk), which is open source in the Quantiles monorepo at [github.com/quantiles-evals/quantiles/tree/main/python](https://github.com/quantiles-evals/quantiles/tree/main/python). Custom-code evaluations are configured with `type = "custom_code"` in the configuration file and should be run with the standard `qt run <eval_name>` command. When a custom-code evaluation is run, the `qt` CLI starts the local Quantiles runtime and a subprocess that executes the command specified in the `command` field, injects run metadata into the subprocess, records results, and shuts down the runtime when finished.
 
 ### Python custom eval guidance
 
@@ -273,9 +275,9 @@ uv add quantiles
 
 If the user does not want to use `uv` or wants to integrate the Quantiles SDK into a repository with pre-existing Python code that already uses some other dependency management system, use the tooling they already have. Do not impose `uv` on them.
 
-A Python Quantiles eval should generally include:
+A Python Quantiles evaluation should generally include:
 
-- An eval name, called a `workflow` in the SDK
+- An evaluation name, called a `workflow` in the SDK
 - An async handler
 - Input JSON parsing
 - Deterministic sample IDs
@@ -286,7 +288,7 @@ A Python Quantiles eval should generally include:
 
 Important rules:
 
-- Eval names must be stable and unique within the file.
+- Evaluation names must be stable and unique within the file.
 - `entrypoint()` uses `QUANTILES_WORKFLOW_NAME` from the CLI.
 - A completed `step()` is reused only when both its stable `step_key` and the hash of its `input_value` match. The input is hashed even when its value is `None`, and reusing a step key with different input is rejected.
 - Use deterministic step keys, usually based on sample IDs, and include every behavior-changing value in `input_value` so the input hash captures all cache-invalidating state.
@@ -298,35 +300,35 @@ Important rules:
 - For custom code evaluations, the CLI merges the benchmark's `input` table with a JSON object supplied through `--input`. CLI values override matching configuration keys, and the merged object is serialized as JSON in `QUANTILES_INPUT`.
 - Keep provider credentials in environment variables, not source code.
 
-Prior to running a custom eval, a `quantiles.toml` or `.quantiles.toml` config file is necessary, at least to set up the command that must be run for the eval. See [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details on how to do so. Once the config file is in place, run the Python custom eval with:
+Before running a custom evaluation, create a `quantiles.toml` or `.quantiles.toml` configuration file. See [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for details. Once the configuration file is in place, run the Python custom evaluation with:
 
 ```bash
 qt run <eval-name> --json
 ```
 
-### Custom eval environment variables
+### Custom evaluation environment variables
 
-When `qt run` executes a custom eval command (specified in the config file), Quantiles injects runtime metadata into the subprocess.
+When `qt run` executes a custom evaluation command specified in the configuration file, Quantiles injects runtime metadata into the subprocess.
 
 Common environment variables include:
 
 - `QUANTILES_BASE_URL` — local server URL, often `http://127.0.0.1:8765`
 - `QUANTILES_RUN_ID` — run ID created by `qt run` or reused by `qt resume`
-- `QUANTILES_WORKFLOW_NAME` — eval name passed to `qt run`
+- `QUANTILES_WORKFLOW_NAME` — evaluation name passed to `qt run`
 - `QUANTILES_INPUT` — merged JSON input from the benchmark's `input` table and any `--input` overrides
 
 The SDKs discussed above should automatically detect and handle these variables.
 
 Do not manually parse these variables unless the user explicitly asks for lower-level integration.
 
-### Converting ad-hoc eval scripts
+### Converting ad-hoc evaluation scripts
 
-When converting an ad-hoc eval script into a Quantiles eval:
+When converting an ad-hoc evaluation script into a Quantiles evaluation:
 
 1. Preserve the existing dataset loading logic.
 2. Preserve the existing model, prompt, scorer, and metric behavior unless the user asks for changes.
-3. Wrap the eval in a Quantiles workflow.
-4. Move per-sample model calls or scoring into durable `step`s.
+3. Wrap the evaluation in a Quantiles workflow.
+4. Move per-sample model calls or scoring into durable `step()` calls.
 5. Use deterministic `step` keys based on sample IDs.
 6. Emit aggregate metrics with `emit()`.
 7. Always pass the `--json` flag to `qt` commands, and return a JSON summary of the results.
@@ -346,7 +348,7 @@ Always pass `--json` to the following commands:
 - `qt show <run_id> --json`
 - `qt compare <run_id_1> <run_id_2> --json`
 
-`qt run` returns structured data that includes the `run_id` and eval name. Inspect the output to extract the requested information and perform the requested analysis.
+`qt run` returns structured data that includes the `run_id` and evaluation name. Inspect the output to extract the requested information and perform the requested analysis.
 
 Use the returned `run_id` to inspect the run later:
 
@@ -362,9 +364,9 @@ qt resume <run_id> --json
 
 Do not paste large raw JSON into the response. Summarize the important fields.
 
-## Inspecting and analyzing evals
+## Inspecting and analyzing evaluations
 
-If an eval has already run, use its `run_id` with `qt show`:
+If an evaluation has already run, use its `run_id` with `qt show`:
 
 ```bash
 qt show <run_id> --json
@@ -372,7 +374,7 @@ qt show <run_id> --json
 
 If you do not have a `run_id`, use `qt list --json` to get a complete JSON list of all runs, then find the `run_id` in the list.
 
-`qt show` returns structured information about the run, including the `run_id` and eval name. Inspect the output to extract the requested information and perform the requested analysis. When the user asks what happened in a run, inspect both aggregate metrics and sample-level results.
+`qt show` returns structured information about the run, including the `run_id` and evaluation name. Inspect the output to extract the requested information and perform the requested analysis. When the user asks what happened in a run, inspect both aggregate metrics and sample-level results.
 
 ### Sample-level analysis
 
@@ -396,9 +398,9 @@ When analyzing a run, use this process:
    - fix the prompt
    - fix the scorer
    - fix runtime dependencies
-   - run a provider-backed eval instead of a demo sampler eval
+   - run a provider-backed evaluation instead of a demo sampler evaluation
 
-For small sample counts (i.e. the number of samples in the run is a small fraction of the total samples in the benchmark or eval), warn the user to be cautious in interpreting the results given the small sample.
+For small sample counts (i.e., when the number of samples in the run is a small fraction of the total samples in the benchmark or evaluation), warn the user to be cautious when interpreting the results given the small sample size.
 
 ## Listing runs
 
@@ -413,21 +415,21 @@ Below are some examples of things you can find in the output of this command:
 - the most recent run
 - two runs to compare
 - failed or interrupted runs
-- runs for a specific eval
+- runs for a specific evaluation
 
-If there are many runs, narrow by benchmark name, eval name, timestamp, status, or model when available. Use `qt list` to identify candidate run IDs, then use `qt show <run_id> --json` for structured inspection.
+If there are many runs, narrow by benchmark name, evaluation name, timestamp, status, or model when available. Use `qt list` to identify candidate run IDs, then use `qt show <run_id> --json` for structured inspection.
 
-## Comparing evals
+## Comparing evaluations
 
-The `qt` CLI can compare two eval runs. To compare runs, first identify the two `run_id` values, then run the following:
+The `qt` CLI can compare two evaluation runs. To compare runs, first identify the two `run_id` values, then run the following:
 
 ```bash
 qt compare <run_id_1> <run_id_2> --json
 ```
 
-Before doing any comparative analyses, check whether the comparison is apples-to-apples by checking the following:
+Before comparing runs, confirm that the comparison is apples-to-apples using the following criteria:
 
-- Same eval
+- Same evaluation
 - Same dataset or dataset version
 - Same sample count
 - Same split or sample selection, if available
@@ -439,7 +441,7 @@ Before doing any comparative analyses, check whether the comparison is apples-to
 
 If benchmark names differ, tell the user that the comparison may not be apples-to-apples because the runs may measure different model functionality and behaviors.
 
-When comparing, report the following information, if available, along with any other analyses that would help the user interpret the results:
+When comparing, report the following information, if available, along with any additional analysis that would help the user interpret the results:
 
 - Run IDs
 - What changed between the runs
@@ -450,9 +452,9 @@ When comparing, report the following information, if available, along with any o
 - Whether the result is meaningful, directional, or only a smoke-test comparison
 - Recommended next command
 
-## Resuming interrupted runs
+## Resuming interrupted or failed evaluation runs
 
-If an eval failed or was interrupted for any reason, resume it from where it left off instead of restarting the run from the beginning. Do so with the following command:
+If an evaluation is interrupted or fails for any reason, resume it from where it left off instead of restarting the run from the beginning. Do so with the following command:
 
 ```bash
 qt resume <run_id> --json
@@ -471,26 +473,26 @@ After resuming, report:
 
 ## Result interpretation and model-quality summary
 
-When summarizing a completed eval run, include both the raw result and a high-level interpretation. Keep the interpretation calibrated to the eval's stated purpose, metric definitions, sample size, and model configuration.
+When summarizing a completed evaluation run, include both the raw result and a high-level interpretation. Keep the interpretation calibrated to the evaluation's stated purpose, metric definitions, sample size, and model configuration.
 
 For every completed run summary, include:
 
-- The eval name and, when inferable, what capability or behavior it is intended to measure.
+- The evaluation name and, when inferable, what capability or behavior it is intended to measure.
 - The model name and whether it is a real provider-backed model or `demo-builtin`.
-- The primary metrics and their values, using the metric names emitted by the eval.
+- The primary metrics and their values, using the metric names emitted by the evaluation.
 - The sample count and whether the run appears to be a smoke test, partial run, or full configured run.
 - A plain-English interpretation of what the result suggests.
 - Practical impact: whether the result is useful for debugging, regression detection, comparison, model selection, or only execution validation.
 - Caveats and limits: demo model, small sample size, unclear metric semantics, benchmark limitations, non-comparable runs, or missing sample-level detail.
 - A recommended next action.
 
-Do not impose a generic meaning on metrics. First use the eval's own documentation, config, emitted metric names, and sample-level outputs to infer what the metrics mean. If metric semantics are unclear, say so and give a cautious interpretation rather than pretending the meaning is known.
+Do not impose a generic meaning on metrics. First use the evaluation's own documentation, config, emitted metric names, and sample-level outputs to infer what the metrics mean. If metric semantics are unclear, say so and give a cautious interpretation rather than pretending the meaning is known.
 
 Never claim `demo-builtin` results measure real model quality. For demo runs, interpret only benchmark execution, metric shape, sample distribution, and storage behavior.
 
 ## Suggested reporting template
 
-Below is an example template that could be used for reporting results after running, inspecting, comparing, or resuming Quantiles evals. If the user requests a different format, adhere to their request and do not use this format.
+Below is an example template that could be used for reporting results after running, inspecting, comparing, or resuming Quantiles evaluations. If the user requests a different format, adhere to their request and do not use this format.
 
 ```text
 Command used:
@@ -518,7 +520,7 @@ Sample-level findings:
 <representative failures, errors, or patterns>
 
 Interpretation:
-<plain-English meaning calibrated to the eval and metric definitions>
+<plain-English meaning calibrated to the evaluation and metric definitions>
 
 Practical impact:
 <debugging / regression signal / comparison signal / model-selection signal / smoke-test only>
@@ -560,7 +562,7 @@ Then verify:
 command -v qt && qt --help
 ```
 
-### Built-in eval ran but results look random
+### Built-in benchmark ran but results look random
 
 Check whether the run used the demo model. Demo model output is expected to be random or fake and should only be used for overall validation and smoke testing.
 
@@ -568,11 +570,11 @@ Check whether the run used the demo model. Demo model output is expected to be r
 
 Check the relevant provider environment variable from the "Secrets and cost safety" section, then verify that the `model` input key uses the correct provider prefix.
 
-Model configuration can be found in the `quantiles.toml`/`.quantiles.toml` config file. Read [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for more details.
+Model configuration belongs in a `quantiles.toml` or `.quantiles.toml` configuration file. Read [github.com/quantiles-evals/quantiles/blob/main/CONFIG.md](https://github.com/quantiles-evals/quantiles/blob/main/CONFIG.md) for more details.
 
 ### JSON parsing fails
 
-Most `qt` commands have a `--json` flag, including `qt run`, `qt show`, and `qt list`. Make sure to pass the `--json` flag to these and more commands, so that the output can be easily parsed (e.g. by the `jq` tool, if it's present on the user's machine). If you do not pass `--json`, the command will emit human-readable output instead.
+Most `qt` commands, including `qt run`, `qt show`, and `qt list`, support `--json`. Pass the flag whenever it is supported so the output can be parsed reliably, for example with `jq` when it is installed. Without `--json`, the command emits human-readable output instead.
 
 For example, this command emits machine-readable output:
 
@@ -580,17 +582,17 @@ For example, this command emits machine-readable output:
 qt run my-eval --json
 ```
 
-While the same command without the `--json` flag emits human-readable output that will not parse as JSON:
+The same command without the `--json` flag emits human-readable output that will not parse as JSON:
 
 ```bash
 qt run my-eval
 ```
 
-### Custom eval does not connect to Quantiles local RPC server
+### Custom evaluation does not connect to Quantiles local RPC server
 
 Check that it is run through `qt run` and that the SDK can see the Quantiles environment variables.
 
-Run a minimal custom eval smoke test:
+Run a minimal custom evaluation smoke test:
 
 ```bash
 qt run <eval-name> --json
@@ -608,7 +610,7 @@ If the run is not found or marked "completed", resume is not possible.
 
 ### Comparison is confusing
 
-Use `qt show` on both runs to check the benchmark/eval name, input JSON, sample count, model, scorer, and metric definitions before interpreting the comparison:
+Use `qt show` on both runs to check the benchmark/evaluation name, input JSON, sample count, model, scorer, and metric definitions before interpreting the comparison:
 
 ```bash
 qt show <run_id_1> --json
